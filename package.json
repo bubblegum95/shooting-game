@@ -1,23 +1,16 @@
 {
-  "name": "shooting-game",
-  "version": "1.0.0",
-  "description": "mini shooting game",
-  "main": "app.js",
+  "name": "app",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./bin/www"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bubblegum95/shooting-game.git"
-  },
-  "keywords": [
-    "node",
-    "game"
-  ],
-  "author": "황세민",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/bubblegum95/shooting-game/issues"
-  },
-  "homepage": "https://github.com/bubblegum95/shooting-game#readme"
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "morgan": "~1.9.1"
+  }
 }
