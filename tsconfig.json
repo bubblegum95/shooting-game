@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES6", // 컴파일할 JS 버전
+    "module": "commonjs", // 모듈 시스템
+    "outDir": "./dist", // 컴파일된 파일이 저장될 디렉터리
+    "rootDir": "./src", // TypeScript 소스 파일이 있는 디렉터리
+    "strict": true, // 엄격한 타입 검사
+    "moduleResolution": "node",
+    "esModuleInterop": true, // ES 모듈을 CommonJS 모듈과 호환 가능하게
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false
+  },
+  "include": ["src/**/*.ts"], // 컴파일할 TypeScript 파일 경로
+  "exclude": ["node_modules"] // 제외할 파일 경로
+}

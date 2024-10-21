@@ -2,21 +2,44 @@
   "name": "app",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "start": "node ./src/app.js"
+    "build": "tsc",
+    "start": "node ./dist/src/app.js",
+    "dev": "nodemon --exec ts-node --transpile-only ./src/app.ts",
+    "start:dev": "nodemon ./dist/src/app.js"
   },
   "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "@types/dotenv": "^8.2.0",
+    "@types/redis": "^4.0.11",
+    "@types/winston": "^2.4.4",
     "body-parser": "^1.20.3",
+    "class-validate": "^0.0.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.4.5",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
+    "ioredis": "^5.4.1",
     "jade": "~1.11.0",
-    "morgan": "~1.9.1"
+    "morgan": "~1.9.1",
+    "pg": "^8.13.0",
+    "prisma": "^5.20.0",
+    "redis": "^4.7.0",
+    "socket.io": "^4.8.0",
+    "typeorm": "^0.3.20",
+    "uuid": "^10.0.0",
+    "winston": "^3.15.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "^5.0.0",
+    "@types/ioredis": "^5.0.0",
+    "@types/morgan": "^1.9.9",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.5.12",
+    "nodemon": "^3.1.7",
+    "typescript": "^5.6.2"
   }
 }
