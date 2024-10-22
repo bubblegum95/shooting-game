@@ -7,6 +7,7 @@ import { Match } from '../entities/match.entity';
 import { Team } from '../entities/team.entity';
 import { Player } from '../entities/player.entity';
 import { ModuleInitLog, logger } from '../winston';
+import { Callback } from 'typeorm';
 
 export class GameGateway {
   private logname = { filename: 'GameGateway' };
@@ -135,12 +136,19 @@ export class GameGateway {
   // 히어로 액션 통제 -> 행하는 주체, 행함, 타겟
   async getHeroesAction(
     socket: Socket,
+    matchId: Match['id'],
     playerId: Player['id'],
-    name: keyof typeof Heroes,
-    event: string,
-    value: any,
-    target: Player['id']
+    skill: string,
+    targetId: Player['id']
   ) {
-    // 레디스에서 히어로에 대한 객체 정보 모두 불러오기 -> 행위에 따른 상대 변화 적용하기
+    // 레디스에서 히어로에 대한 객체 정보 모두 불러오기 -> 메서드 사용 -> 행위에 따른 상대 변화 적용하기
+    const player = await this.gameService.getPlayerObject(playerId);
+    const target = await this.gameService.getPlayerObject(targetId);
+    const playerType: keyof typeof Heroes = player.name;
+    const targetType: keyof typeof Heroes = target.name;
+    const playerHero = Heroes[playerType];
+    const targetHero = Heroes[targetType];
+
+    const result = playerHero.useSkill(socket, matchId, skill, targetHero);
   }
 }

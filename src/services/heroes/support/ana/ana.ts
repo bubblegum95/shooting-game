@@ -1,5 +1,5 @@
-import { HeroName } from '../../../type/hero-name.type';
-import { Role } from '../../../type/role.type';
+import { HeroName } from '../../../../types/hero-name.type';
+import { Role } from '../../../../types/role.type';
 import { Hero } from '../../hero';
 import { Support } from '../support';
 import { BioticGrenade } from './biotic-grenade';

@@ -1,5 +1,7 @@
-import { HeroName } from '../type/hero-name.type';
-import { Role } from '../type/role.type';
+import { Socket } from 'socket.io';
+import { Match } from '../../entities/match.entity';
+import { HeroName } from '../../types/hero-name.type';
+import { Role } from '../../types/role.type';
 
 export class Hero {
   [key: string]: any; // 인덱스 시그니처로 동적 속성 허용
@@ -95,6 +97,33 @@ export class Hero {
       }
     } catch (error) {
       throw error;
+    }
+  }
+
+  async useSkill(
+    socket: Socket,
+    skill: string,
+    matchId: Match['id'],
+    target: Hero
+  ) {
+    const skillMap: {
+      [key: string]: (
+        socket: Socket,
+        matchId: Match['id'],
+        target: Hero
+      ) => void;
+    } = {
+      // Ana
+      sleepDart: this.sleepDart.bind(this),
+      heal: this.heal.bind(this),
+    };
+
+    const method = skillMap[skill];
+
+    if (method) {
+      method(socket, matchId, target);
+    } else {
+      socket.emit(`error: Skill ${skill} not found!`);
     }
   }
 }
