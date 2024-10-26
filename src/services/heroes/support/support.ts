@@ -1,6 +1,11 @@
-import { HeroName } from '../../type/hero-name.type';
-import { Role } from '../../type/role.type';
+import { Namespace } from 'socket.io';
+import { HeroName } from '../../../types/hero-name.type';
+import { Role } from '../../../types/role.type';
 import { Hero } from '../hero';
+import { RedisService } from '../../redis.service';
+import { Match } from '../../../entities/match.entity';
+import { Player } from '../../../entities/player.entity';
+import { Team } from '../../../entities/team.entity';
 
 export class Support extends Hero {
   constructor(
@@ -12,11 +17,13 @@ export class Support extends Hero {
     public speed: number,
     public ultimate: number,
     public maxUltimate: number,
-    public superCharged: boolean,
     public dead: boolean,
     public kill: number,
     public death: number,
-    public heal: number
+    public heal: number,
+    public matchId: Match['id'],
+    public teamId: Team['id'],
+    public playerId: Player['id']
   ) {
     super(
       name,
@@ -27,33 +34,43 @@ export class Support extends Hero {
       speed,
       ultimate,
       maxUltimate,
-      superCharged,
       dead,
       kill,
-      death
+      death,
+      matchId,
+      teamId,
+      playerId
     );
   }
 
-  async attacks(target: Hero) {
-    super.attacks(target);
+  async attacks(io: Namespace, redisService: RedisService, target: Hero) {
+    return await super.attacks(io, redisService, target);
   }
 
-  async healsAlly(target: Hero, point: number) {
-    target.takesHeal(this.heal);
-    if (this.ultimate < 100) {
+  async healsAlly(
+    io: Namespace,
+    redisService: RedisService,
+    target: Hero,
+    point: number
+  ) {
+    target.takesHeal(io, redisService, this.heal);
+    if (this.ultimate < 100 && target.playerId) {
       this.ultimate += point;
+      await redisService.setAllPlayerStatuses(target.playerId, this);
+      const result = await redisService.getMatchStatus(target.matchId);
+      io.to(target.matchId).emit('match:status', result);
     }
   }
 
-  async takesDamage(amount: number) {
-    super.takesDamage(amount);
+  async takesDamage(io: Namespace, redisService: RedisService, amount: number) {
+    return super.takesDamage(io, redisService, amount);
   }
 
-  async takesHeal(amount: number) {
-    super.takesHeal(amount);
+  async takesHeal(io: Namespace, redisService: RedisService, amount: number) {
+    return await super.takesHeal(io, redisService, amount);
   }
 
-  async usesUltimate() {
-    super.usesUltimate();
+  async usesUltimate(io: Namespace, redisService: RedisService) {
+    return super.usesUltimate(io, redisService);
   }
 }

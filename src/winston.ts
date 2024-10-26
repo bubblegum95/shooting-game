@@ -17,8 +17,8 @@ export const logger = createLogger({
   ),
   transports: [
     new transports.Console(), // 콘솔에 로그 출력
-    new transports.File({ filename: 'error.log', level: 'error' }), // 오류 로그는 파일에 저장
-    new transports.File({ filename: 'combined.log' }), // 모든 로그를 파일에 저장
+    new transports.File({ filename: 'logs/error.log', level: 'error' }), // 오류 로그는 파일에 저장
+    new transports.File({ filename: 'logs/info.log' }), // 모든 로그를 파일에 저장
   ],
 });
 

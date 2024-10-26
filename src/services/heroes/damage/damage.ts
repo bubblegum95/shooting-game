@@ -1,5 +1,8 @@
-import { HeroName } from '../../type/hero-name.type';
-import { Role } from '../../type/role.type';
+import { Match } from '../../../entities/match.entity';
+import { Player } from '../../../entities/player.entity';
+import { Team } from '../../../entities/team.entity';
+import { HeroName } from '../../../types/hero-name.type';
+import { Role } from '../../../types/role.type';
 import { Hero } from '../hero';
 
 export class Damage extends Hero {
@@ -12,10 +15,12 @@ export class Damage extends Hero {
     public speed: number,
     public ultimate: number,
     public maxUltimate: number,
-    public superCharged: boolean,
     public dead: boolean,
     public kill: number,
-    public death: number
+    public death: number,
+    public matchId: Match['id'],
+    public teamId: Team['id'],
+    public playerId: Player['id']
   ) {
     super(
       name,
@@ -26,10 +31,12 @@ export class Damage extends Hero {
       speed,
       ultimate,
       maxUltimate,
-      superCharged,
       dead,
       kill,
-      death
+      death,
+      matchId,
+      teamId,
+      playerId
     );
   }
 

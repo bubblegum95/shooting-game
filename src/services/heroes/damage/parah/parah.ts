@@ -1,7 +1,8 @@
-import { HeroName } from '../../type/hero-name.type';
-import { Role } from '../../type/role.type';
-import { Hero } from '../hero';
-import { Damage } from './damage';
+import { Player } from '../../../../entities/player.entity';
+import { HeroName } from '../../../../types/hero-name.type';
+import { Role } from '../../../../types/role.type';
+import { Hero } from '../../hero';
+import { Damage } from '../damage';
 
 export class Parah extends Damage {
   constructor(
@@ -13,10 +14,11 @@ export class Parah extends Damage {
     public speed: number,
     public ultimate: number,
     public maxUltimate: number,
-    public superCharged: boolean,
     public dead: boolean,
     public kill: number,
-    public death: number
+    public death: number,
+    public team?: string,
+    public player?: Player['id']
   ) {
     super(
       name,
@@ -27,10 +29,10 @@ export class Parah extends Damage {
       speed,
       ultimate,
       maxUltimate,
-      superCharged,
       dead,
       kill,
-      death
+      death,
+      team
     );
   }
 

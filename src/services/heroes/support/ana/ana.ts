@@ -1,3 +1,4 @@
+import { Namespace } from 'socket.io';
 import { HeroName } from '../../../../types/hero-name.type';
 import { Role } from '../../../../types/role.type';
 import { Hero } from '../../hero';
@@ -5,6 +6,10 @@ import { Support } from '../support';
 import { BioticGrenade } from './biotic-grenade';
 import { NanoBoost } from './nano-boost';
 import { SleepDart } from './sleep-dart';
+import { RedisService } from '../../../redis.service';
+import { Match } from '../../../../entities/match.entity';
+import { Player } from '../../../../entities/player.entity';
+import { Team } from '../../../../entities/team.entity';
 
 export class Ana extends Support {
   constructor(
@@ -16,11 +21,16 @@ export class Ana extends Support {
     public speed: number,
     public ultimate: number,
     public maxUltimate: number,
-    public superCharged: boolean,
     public dead: boolean,
     public kill: number,
     public death: number,
-    public heal: number
+    public heal: number,
+    public matchId: Match['id'],
+    public teamId: Team['id'],
+    public playerId: Player['id'],
+    public bioticGrenade: BioticGrenade,
+    public nanoBoost: NanoBoost,
+    public sleepDart: SleepDart
   ) {
     super(
       name,
@@ -31,58 +41,52 @@ export class Ana extends Support {
       speed,
       ultimate,
       maxUltimate,
-      superCharged,
       dead,
       kill,
       death,
-      heal
+      heal,
+      matchId,
+      teamId,
+      playerId
     );
   }
 
-  async attacksEnamy(target: Hero) {
-    super.attacks(target);
+  async attacksEnamy(io: Namespace, redisService: RedisService, target: Hero) {
+    await super.attacks(io, redisService, target);
   }
 
-  async healsAlly(target: Hero, point: number) {
-    super.healsAlly(target, point);
+  async healsAlly(
+    io: Namespace,
+    redisService: RedisService,
+    target: Hero,
+    point: number
+  ) {
+    await super.healsAlly(io, redisService, target, point);
   }
 
-  async takesDamage(amount: number) {
-    super.takesDamage(amount);
+  async takesDamage(io: Namespace, redisService: RedisService, amount: number) {
+    await super.takesDamage(io, redisService, amount);
   }
 
-  async takesHeal(amount: number) {
-    super.takesHeal(amount);
+  async takesHeal(io: Namespace, redisService: RedisService, amount: number) {
+    await super.takesHeal(io, redisService, amount);
   }
 
   async usesBioticGrenade(
-    target: Hero,
-    increase: number,
-    isActive: boolean, // 스킬 활성화
-    coolTime: number // 스킬 쿨타임
+    io: Namespace,
+    redisService: RedisService,
+    target: Hero
   ) {
-    const bioticGrenade = new BioticGrenade(increase, isActive);
-    bioticGrenade.useTo(target, coolTime);
+    if (this.bioticGrenade['isActive']) {
+      return await this.bioticGrenade.useTo(io, redisService, this, target);
+    }
   }
 
-  async usesSleepDart(
-    target: Hero,
-    duration: number, // 스킬 지속시간
-    isActive: boolean, // 스킬 활성화
-    coolTime: number // 스킬 쿨타임
-  ) {
-    const sleepDart = new SleepDart(duration, isActive);
-    await sleepDart.useTo(target, coolTime);
+  async usesSleepDart(io: Namespace, redisService: RedisService, target: Hero) {
+    await this.sleepDart.useTo(io, redisService, this, target);
   }
 
-  async usesNanoBoost(
-    target: Hero,
-    duration: number, // 스킬 지속시간
-    increase: number, // 공격력 강화량
-    isActive: boolean, // 스킬 활성화
-    coolTime: number // 스킬 쿨타임
-  ) {
-    const nanoBoost = new NanoBoost(duration, increase, isActive);
-    nanoBoost.useTo(target, coolTime);
+  async usesNanoBoost(io: Namespace, redisService: RedisService, target: Hero) {
+    return await this.nanoBoost.useTo(io, redisService, this, target);
   }
 }

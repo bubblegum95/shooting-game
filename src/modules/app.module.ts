@@ -4,8 +4,7 @@ import { Player } from '../entities/player.entity';
 import { Team } from '../entities/team.entity';
 import { User } from '../entities/user.entity';
 import redis from '../redis/redis';
-import { RedisService } from '../redis/redis.service';
-import { GameService } from '../services/game.service';
+import { RedisService } from '../services/redis.service';
 import { MatchService } from '../services/match.service';
 import { PlayerService } from '../services/player.service';
 import { TeamService } from '../services/team.service';
@@ -39,15 +38,14 @@ export class AppModule {
     const userService = new UserService(userRepository);
     const redisService = new RedisService(redis);
 
-    const gameService = new GameService(
+    const socket = new SocketModule(
+      this.httpServer,
       matchService,
       teamService,
       playerService,
       userService,
       redisService
     );
-
-    const socket = new SocketModule(this.httpServer, gameService);
 
     this.app.use('/users', userRouter);
 
