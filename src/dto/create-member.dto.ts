@@ -1,5 +1,5 @@
-import { Match } from '../game/entities/match.entity';
-import { Team } from '../game/entities/team.entity';
+import { Match } from '../entities/match.entity';
+import { Team } from '../entities/team.entity';
 import { User } from '../entities/user.entity';
 
 export class CreateMemberDto {

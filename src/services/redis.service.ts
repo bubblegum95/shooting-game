@@ -6,8 +6,8 @@ import { Match } from '../entities/match.entity';
 import { ModuleInitLog, logger } from '../winston';
 import { Redis } from 'ioredis';
 import { Hero } from './heroes/hero';
-import { Skill } from './heroes/skill';
 import { Status } from '../types/player-status.type';
+import { Skill } from './heroes/skill';
 
 export class RedisService {
   constructor(private redis: Redis) {
@@ -135,7 +135,7 @@ export class RedisService {
         const statusList = await this.getAllPlayerStatuses(playerId);
 
         for (const status of statusList) {
-          let skillStatuses: { [key: string]: any } = {};
+          let skillStatusOb: { [key: string]: any } = {};
           let statusName = status.split(':')[2];
           let type = status.split(':')[3];
 
@@ -148,9 +148,9 @@ export class RedisService {
             for (const skillStatus of skillStatusList) {
               const skillstatusName = skillStatus.split(':')[3];
               const skillstatusValue = this.redis.get(skillStatus);
-              skillStatuses[skillstatusName] = skillstatusValue;
+              skillStatusOb[skillstatusName] = skillstatusValue;
             }
-            playerStatus[statusName] = skillStatusList;
+            playerStatus[statusName] = skillStatusOb;
           } else if (type === Status.Property) {
             const property = await this.getPlayerStatus(playerId, status, type);
             playerStatus[statusName] = property;

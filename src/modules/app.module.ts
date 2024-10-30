@@ -14,6 +14,7 @@ import { SocketModule } from './socket.module';
 import http from 'http';
 import express from 'express';
 import userRouter from '../routes/user.route';
+import { UserModule } from './user.module';
 
 export class AppModule {
   dataSource: any;
@@ -23,6 +24,7 @@ export class AppModule {
     private readonly httpServer: http.Server
   ) {
     this.initModule();
+    logger.info(ModuleInitLog, { filename: 'AppModule' });
   }
 
   async initModule() {
@@ -46,10 +48,9 @@ export class AppModule {
       userService,
       redisService
     );
+    const userModule = new UserModule(userService);
 
-    this.app.use('/users', userRouter);
-
-    logger.info(ModuleInitLog, { filename: 'AppModule' });
+    this.app.use('/users', userModule.getRouter());
 
     return socket;
   }

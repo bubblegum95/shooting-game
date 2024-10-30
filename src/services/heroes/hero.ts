@@ -5,97 +5,61 @@ import { Match } from '../../entities/match.entity';
 import { RedisService } from '../redis.service';
 import { Player } from '../../entities/player.entity';
 import { Team } from '../../entities/team.entity';
+import { renewMatchStatus } from './renewMatchStatus';
 
 export class Hero {
   [key: string]: any; // 인덱스 시그니처로 동적 속성 허용
 
   constructor(
-    public name: HeroName,
-    public role: Role,
-    public health: number,
-    public maxHealth: number,
-    public power: number,
-    public speed: number,
-    public ultimate: number,
-    public maxUltimate: number,
-    public dead: boolean,
-    public kill: number,
-    public death: number,
+    public name: HeroName, // 히어로 이름
+    public role: Role, // 직군
+    public health: number, // 현재 체력
+    public maxHealth: number, // 최대 체력
+    public speed: number, // 이동 속도
+    public ultimate: number, // 궁극기 충전
+    public maxUltimate: number, // 궁극기 최대 충전
+    public dead: boolean, // 사망 상태
+    public kill: number, //킬 수
+    public death: number, // 사망 수
     public matchId: Match['id'],
     public teamId: Team['id'],
     public playerId: Player['id']
   ) {}
 
-  // 일반 공격
-  async attacks(io: Namespace, redisService: RedisService, target: Hero) {
-    console.log(
-      `${this.name} attacks ${target.name} with ${this.power} power!`
-    );
-    await target.takesDamage(io, redisService, this.power);
-  }
-
-  // 데미지
-  async takesDamage(io: Namespace, redisService: RedisService, amount: number) {
-    this.health -= amount;
-    if (this.playerId) {
-      await redisService.setAllPlayerStatuses(this.playerId, this);
-      const result = await redisService.getMatchStatus(this.matchId);
-      io.to(this.matchId).emit('match:status', result);
-      console.log(
-        `${this.name} took ${amount} damage. Health is now ${this.health}.`
-      );
-    }
-  }
-
-  // 힐
-  async takesHeal(io: Namespace, redisService: RedisService, amount: number) {
-    if (this.playerId) {
-      this.health += amount;
-      await redisService.setAllPlayerStatuses(this.playerId, this);
-      const result = await redisService.getMatchStatus(this.matchId);
-      io.to(this.matchId).emit('match:status', result);
-      console.log(
-        `${this.name} took ${amount} heal. Health is now ${this.health}.`
-      );
-    }
-  }
-
-  // 궁극기 스킬 사용
-  async usesUltimate(io: Namespace, redisService: RedisService) {
-    if (this.playerId) {
-      this.ultimate = 0;
-      await redisService.setAllPlayerStatuses(this.playerId, this);
-      const result = await redisService.getMatchStatus(this.matchId);
-      io.to(this.matchId).emit('match:status', result);
-      console.log(`${this.name} use now ultimate skill`);
-    }
-  }
-
   // 사망 후 리스폰
-  async diesNRespawns(
-    io: Namespace,
-    redisService: RedisService,
-    duration: number
-  ) {
+  async dieNRespawn(io: Namespace, redisService: RedisService) {
     try {
-      if (this.playerId && this.health <= 0) {
-        this.dead = true;
-        await redisService.setAllPlayerStatuses(this.playerId, this);
-        const result = await redisService.getMatchStatus(this.matchId);
-        io.to(this.matchId).emit('match:status', result);
+      this.dead = true;
+      await renewMatchStatus(io, redisService, this);
 
-        setTimeout(async () => {
-          (this.health = this.maxHealth),
-            (this.dead = false),
-            (this.death += 1);
-        }, duration);
-
-        await redisService.setAllPlayerStatuses(this.playerId, this);
-        const respawnResult = await redisService.getMatchStatus(this.matchId);
-        io.to(this.matchId).emit('match:status', respawnResult);
-      }
+      setTimeout(async () => {
+        this.health = this.maxHealth;
+        this.dead = false;
+        this.death += 1;
+        await renewMatchStatus(io, redisService, this);
+      }, 3 * 1000);
     } catch (error) {
       throw error;
+    }
+  }
+
+  async takeDamage(io: Namespace, redisService: RedisService, power: number) {
+    this.health -= power;
+    await renewMatchStatus(io, redisService, this);
+
+    if (this.health <= 0) {
+      await this.dieNRespawn(io, redisService);
+      await renewMatchStatus(io, redisService, this);
+    }
+  }
+
+  async takeHeal(io: Namespace, redisService: RedisService, power: number) {
+    this.health += power;
+    await renewMatchStatus(io, redisService, this);
+
+    if (this.health >= this.maxHealth) {
+      this.health = this.maxHealth;
+      await renewMatchStatus(io, redisService, this);
     }
   }
 }

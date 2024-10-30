@@ -40,11 +40,18 @@ export class GameGateway {
       if (userId && typeof userId === 'string') {
         await this.redisService.setUserSocket(userId, socket.id);
         await this.redisService.setUserStatus(userId, 'online');
+      } else if (!userId) {
+        socket.emit('server:error', '사용자 정보를 확인할 수 없습니다.');
+        throw new Error('사용자 정보를 확인할 수 없습니다.');
       }
+
+      socket.on('message', () => {
+        socket.emit('message', 'welcome to overwatch mini world!');
+      });
 
       // 클라이언트 연결 종료
       socket.on('disconnect', () => {
-        logger.debug(`Clients socket disconnected: socket.id`, this.logname);
+        logger.debug(`Clients socket disconnected: ${socket.id}`, this.logname);
 
         redis.set(`user:${userId}:status`, 'offline');
         redis.del(`user:${userId}:socket`); // 소켓 ID 정보 삭제
@@ -52,7 +59,7 @@ export class GameGateway {
 
       // 매칭 및 팀 생성 및 초대
       socket.on(
-        'matchingGame',
+        'match:status:create',
         async (dto: {
           owner: User['id'];
           battleField: keyof typeof BattleField;
@@ -66,44 +73,44 @@ export class GameGateway {
             users
           );
           const status = await this.getMatchStatus(matchId);
-          this.io.to(matchId).emit('getMatchStatus', status);
+          this.io.to(matchId).emit('match:status:get', status);
         }
       );
 
       // 매칭 초대 확인
       socket.on(
-        'invitingGame',
+        'match:invitation:send',
         (dto: { matchId: Match['id']; owner: User['id'] }) => {
           const { matchId, owner } = dto;
-          socket.emit('invitedGame', matchId, owner);
+          socket.emit('match:invitation:confirm', matchId, owner);
         }
       );
 
       // 매칭 초대 수락 및 팀 편성
       socket.on(
-        'acceptInvitation',
+        'match:inviation:accept',
         async (dto: { userId: User['id']; matchId: Match['id'] }) => {
           const { userId, matchId } = dto;
           await this.acceptInvitation(socket, userId, matchId);
           const status = await this.getMatchStatus(matchId);
-          this.io.to(matchId).emit('getMatchStatus', status);
+          this.io.to(matchId).emit('match:status:get', status);
         }
       );
 
       // 경기 종료
       socket.on(
-        'gameOver',
+        'match:status:over',
         async (dto: { matchId: Match['id']; teamId: Team['id'] }) => {
           const { matchId, teamId } = dto;
           await this.gameOver(socket, matchId, teamId);
           await this.getMatchStatus(matchId);
-          this.io.to(matchId).emit('getMatchStatus');
+          this.io.to(matchId).emit('match:status:get');
         }
       );
 
       // 영웅 선택
       socket.on(
-        'choiceHero',
+        'match:hero:choice',
         async (dto: {
           matchId: Match['id'];
           teamId: Team['id'];

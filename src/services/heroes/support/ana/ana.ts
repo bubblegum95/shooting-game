@@ -10,6 +10,7 @@ import { RedisService } from '../../../redis.service';
 import { Match } from '../../../../entities/match.entity';
 import { Player } from '../../../../entities/player.entity';
 import { Team } from '../../../../entities/team.entity';
+import { BioticRifle } from './biotic-rifle';
 
 export class Ana extends Support {
   constructor(
@@ -17,7 +18,6 @@ export class Ana extends Support {
     public role: Role.Support,
     public health: number,
     public maxHealth: number,
-    public power: number,
     public speed: number,
     public ultimate: number,
     public maxUltimate: number,
@@ -30,14 +30,14 @@ export class Ana extends Support {
     public playerId: Player['id'],
     public bioticGrenade: BioticGrenade,
     public nanoBoost: NanoBoost,
-    public sleepDart: SleepDart
+    public sleepDart: SleepDart,
+    public bioticRifle: BioticRifle
   ) {
     super(
       name,
       role,
       health,
       maxHealth,
-      power,
       speed,
       ultimate,
       maxUltimate,
@@ -51,25 +51,12 @@ export class Ana extends Support {
     );
   }
 
-  async attacksEnamy(io: Namespace, redisService: RedisService, target: Hero) {
-    await super.attacks(io, redisService, target);
+  async takeDamage(io: Namespace, redisService: RedisService, amount: number) {
+    return super.takeDamage(io, redisService, amount);
   }
 
-  async healsAlly(
-    io: Namespace,
-    redisService: RedisService,
-    target: Hero,
-    point: number
-  ) {
-    await super.healsAlly(io, redisService, target, point);
-  }
-
-  async takesDamage(io: Namespace, redisService: RedisService, amount: number) {
-    await super.takesDamage(io, redisService, amount);
-  }
-
-  async takesHeal(io: Namespace, redisService: RedisService, amount: number) {
-    await super.takesHeal(io, redisService, amount);
+  async takeHeal(io: Namespace, redisService: RedisService, amount: number) {
+    return await super.takeHeal(io, redisService, amount);
   }
 
   async usesBioticGrenade(
@@ -86,7 +73,29 @@ export class Ana extends Support {
     await this.sleepDart.useTo(io, redisService, this, target);
   }
 
+  async chargeNanoBoost(io: Namespace, redisService: RedisService) {
+    if (this.ultimate >= this.maxUltimate) {
+      await this.nanoBoost.isUseable(io, redisService, this);
+    }
+  }
+
   async usesNanoBoost(io: Namespace, redisService: RedisService, target: Hero) {
-    return await this.nanoBoost.useTo(io, redisService, this, target);
+    await this.nanoBoost.useTo(io, redisService, this, target);
+  }
+
+  async attackAndHeal(io: Namespace, redisService: RedisService, target: Hero) {
+    await this.bioticRifle.attackAndHeal(io, redisService, this, target);
+  }
+
+  async useScope(io: Namespace, redisService: RedisService) {
+    await this.bioticRifle.useScope(io, redisService, this);
+  }
+
+  async noUseScope(io: Namespace, redisService: RedisService) {
+    await this.bioticRifle.noUseScope(io, redisService, this);
+  }
+
+  async chargeBullets(io: Namespace, redisService: RedisService) {
+    await this.bioticRifle.chargeBullets(io, redisService, this);
   }
 }

@@ -13,7 +13,6 @@ export class Support extends Hero {
     public role: Role,
     public health: number,
     public maxHealth: number,
-    public power: number,
     public speed: number,
     public ultimate: number,
     public maxUltimate: number,
@@ -30,7 +29,6 @@ export class Support extends Hero {
       role,
       health,
       maxHealth,
-      power,
       speed,
       ultimate,
       maxUltimate,
@@ -41,10 +39,6 @@ export class Support extends Hero {
       teamId,
       playerId
     );
-  }
-
-  async attacks(io: Namespace, redisService: RedisService, target: Hero) {
-    return await super.attacks(io, redisService, target);
   }
 
   async healsAlly(
@@ -62,15 +56,11 @@ export class Support extends Hero {
     }
   }
 
-  async takesDamage(io: Namespace, redisService: RedisService, amount: number) {
-    return super.takesDamage(io, redisService, amount);
+  async takeDamage(io: Namespace, redisService: RedisService, amount: number) {
+    return super.takeDamage(io, redisService, amount);
   }
 
-  async takesHeal(io: Namespace, redisService: RedisService, amount: number) {
-    return await super.takesHeal(io, redisService, amount);
-  }
-
-  async usesUltimate(io: Namespace, redisService: RedisService) {
-    return super.usesUltimate(io, redisService);
+  async takeHeal(io: Namespace, redisService: RedisService, amount: number) {
+    return await super.takeHeal(io, redisService, amount);
   }
 }

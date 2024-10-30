@@ -11,7 +11,6 @@ export class Damage extends Hero {
     public role: Role,
     public health: number,
     public maxHealth: number,
-    public power: number,
     public speed: number,
     public ultimate: number,
     public maxUltimate: number,
@@ -27,7 +26,6 @@ export class Damage extends Hero {
       role,
       health,
       maxHealth,
-      power,
       speed,
       ultimate,
       maxUltimate,
@@ -38,17 +36,5 @@ export class Damage extends Hero {
       teamId,
       playerId
     );
-  }
-
-  async attack(target: Hero) {
-    super.attack(target);
-  }
-
-  async takeDamage(amount: number) {
-    super.takeDamage(amount);
-  }
-
-  async takeHeal(amount: number) {
-    super.takeHeal(amount);
   }
 }

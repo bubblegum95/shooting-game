@@ -1,21 +1,21 @@
-import { Hero } from '../../hero';
-import { ModuleInitLog, logger } from '../../../../winston';
 import { Namespace } from 'socket.io';
+import { ModuleInitLog, logger } from '../../../../winston';
 import { RedisService } from '../../../redis.service';
-import { Ana } from './ana';
-import { LethalSkill } from '../../lethal-skill';
+import { Cassidy } from './cassidy';
+import { Hero } from '../../hero';
 import { renewMatchStatus } from '../../renewMatchStatus';
+import { LethalSkill } from '../../lethal-skill';
 
-export class SleepDart extends LethalSkill {
+export class Flashbang extends LethalSkill {
   constructor(
     public name: string,
     public isActive: boolean,
-    public cooltime: number,
     public duration: number,
+    public cooltime: number,
     public power: number
   ) {
-    super(name, isActive, cooltime, duration, power);
-    logger.info(ModuleInitLog, { filename: 'SleepDart' });
+    super(name, isActive, duration, cooltime);
+    logger.info(ModuleInitLog, { filename: 'Flashbang' });
   }
 
   async powerUp(
@@ -28,11 +28,11 @@ export class SleepDart extends LethalSkill {
     super.powerUp(io, redisService, player, increase, duration);
   }
 
-  async useTo(
+  async useFlashbang(
     io: Namespace,
     redisService: RedisService,
-    player: Ana,
-    target?: Hero
+    player: Cassidy,
+    target: Hero
   ) {
     if (this.isActive) {
       this.isActive = false;
@@ -44,28 +44,27 @@ export class SleepDart extends LethalSkill {
       }, this.cooltime);
 
       if (target) {
-        console.log(`${target.name} is hit by Sleep Dart and falls asleep.`);
-
-        await target.sleep(io, redisService, player, this.duration);
-        await target.takeDamage(io, redisService, this.power);
+        target.isShocked = true;
+        target.speed = 0;
+        await renewMatchStatus(io, redisService, player);
+        target.shock(io, redisService, this.duration);
       }
     }
   }
 }
 
-Hero.prototype.sleep = async function (
+Hero.prototype.shock = async function (
   io: Namespace,
   redisService: RedisService,
-  player: Hero,
   duration: number
 ) {
-  this.isAsleep = true;
-  console.log(`${this.name} is now asleep.`);
-  await renewMatchStatus(io, redisService, player);
+  this.isShocked = true;
+  const heroSpeed = this.speed;
+  await renewMatchStatus(io, redisService, this);
 
   setTimeout(async () => {
-    this.isAsleep = false;
-    await renewMatchStatus(io, redisService, player);
-    console.log(`${this.name} woke up.`);
+    this.isShocked = false;
+    this.speed = heroSpeed;
+    await renewMatchStatus(io, redisService, this);
   }, duration);
 };

@@ -1,5 +1,5 @@
-import { HeroName } from '../../type/hero-name.type';
-import { Role } from '../../type/role.type';
+import { HeroName } from '../../../types/hero-name.type';
+import { Role } from '../../../types/role.type';
 import { Hero } from '../hero';
 
 export class Tank extends Hero {
@@ -8,7 +8,6 @@ export class Tank extends Hero {
     public role: Role,
     public health: number,
     public maxHealth: number,
-    public power: number,
     public speed: number,
     public ultimate: number,
     public maxUltimate: number,
@@ -24,7 +23,6 @@ export class Tank extends Hero {
       role,
       health,
       maxHealth,
-      power,
       speed,
       ultimate,
       maxUltimate,
@@ -35,10 +33,6 @@ export class Tank extends Hero {
     );
     this.shield = shield;
     this.rush = rush;
-  }
-
-  async attack(target: Hero) {
-    super.attack(target);
   }
 
   async takeDamage(amount: number) {

@@ -2,8 +2,9 @@ import { Namespace } from 'socket.io';
 import { Hero } from '../../hero';
 import { Ana } from './ana';
 import { RedisService } from '../../../redis.service';
-import { Skill } from '../../skill';
 import { ModuleInitLog, logger } from '../../../../winston';
+import { renewMatchStatus } from '../../renewMatchStatus';
+import { Skill } from '../../skill';
 
 export class NanoBoost extends Skill {
   constructor(
@@ -16,6 +17,11 @@ export class NanoBoost extends Skill {
     logger.info(ModuleInitLog, { filename: 'NanoBoost' });
   }
 
+  async isUseable(io: Namespace, redisService: RedisService, player: Ana) {
+    this.isActive = true;
+    await renewMatchStatus(io, redisService, player);
+  }
+
   async useTo(
     io: Namespace,
     redisService: RedisService,
@@ -23,20 +29,15 @@ export class NanoBoost extends Skill {
     target: Hero
   ) {
     if (this.isActive && target) {
-      console.log(`the power of ${target.name} increases.`);
       this.isActive = false;
-      target.power *= this.increase;
-      await redisService.setAllPlayerStatuses(player.playerId!, player);
-      await redisService.setAllPlayerStatuses(target.playerId!, target);
-      const data = await redisService.getMatchStatus(player.matchId);
-      io.to(player.matchId).emit('match:status', data);
-
-      setTimeout(async () => {
-        target.power /= this.increase;
-        await redisService.setAllPlayerStatuses(target.playerId!, target);
-        const timeoutData = await redisService.getMatchStatus(target.matchId);
-        io.to(target.matchId).emit('match:status', timeoutData);
-      }, this.duration);
+      await renewMatchStatus(io, redisService, player);
+      target.DamageSkill.powerUp(
+        io,
+        redisService,
+        target,
+        this.increase,
+        this.duration
+      );
     }
   }
 }
