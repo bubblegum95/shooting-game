@@ -19,7 +19,6 @@ export class Support extends Hero {
     public dead: boolean,
     public kill: number,
     public death: number,
-    public heal: number,
     public matchId: Match['id'],
     public teamId: Team['id'],
     public playerId: Player['id']
@@ -50,7 +49,7 @@ export class Support extends Hero {
     target.takesHeal(io, redisService, this.heal);
     if (this.ultimate < 100 && target.playerId) {
       this.ultimate += point;
-      await redisService.setAllPlayerStatuses(target.playerId, this);
+      await redisService.setPlayerProperties(target.playerId, this);
       const result = await redisService.getMatchStatus(target.matchId);
       io.to(target.matchId).emit('match:status', result);
     }

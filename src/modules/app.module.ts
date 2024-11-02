@@ -3,7 +3,6 @@ import { Match } from '../entities/match.entity';
 import { Player } from '../entities/player.entity';
 import { Team } from '../entities/team.entity';
 import { User } from '../entities/user.entity';
-import redis from '../redis/redis';
 import { RedisService } from '../services/redis.service';
 import { MatchService } from '../services/match.service';
 import { PlayerService } from '../services/player.service';
@@ -13,8 +12,9 @@ import { ModuleInitLog, logger } from '../winston';
 import { SocketModule } from './socket.module';
 import http from 'http';
 import express from 'express';
-import userRouter from '../routes/user.route';
-import { UserModule } from './user.module';
+import { UserRoute } from '../routes/user.route';
+import { GameService } from '../services/game.service';
+import { redisClient } from '../redis/redis.client';
 
 export class AppModule {
   dataSource: any;
@@ -38,19 +38,19 @@ export class AppModule {
     const teamService = new TeamService(teamRepository);
     const playerService = new PlayerService(playerRepository);
     const userService = new UserService(userRepository);
-    const redisService = new RedisService(redis);
+    const redisService = new RedisService(redisClient); // 싱글톤 적용
 
-    const socket = new SocketModule(
-      this.httpServer,
+    const gameService = new GameService(
       matchService,
-      teamService,
-      playerService,
+      redisService,
       userService,
-      redisService
+      playerService,
+      teamService
     );
-    const userModule = new UserModule(userService);
+    const socket = new SocketModule(this.httpServer, redisService, gameService);
+    const userRoute = new UserRoute(userService);
 
-    this.app.use('/users', userModule.getRouter());
+    this.app.use('/users', userRoute.init());
 
     return socket;
   }

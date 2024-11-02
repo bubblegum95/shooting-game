@@ -1,5 +1,5 @@
 export enum Role {
-  Damage,
-  Tank,
-  Support,
+  Damage = 'damage',
+  Tank = 'tank',
+  Support = 'support',
 }

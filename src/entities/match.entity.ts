@@ -19,6 +19,9 @@ export class Match {
   @Column({ type: 'varchar', nullable: false })
   type: keyof typeof BattleField;
 
+  @Column({ type: 'varchar', nullable: true, length: 10 })
+  password?: string | null;
+
   @Column({
     type: 'enum',
     enum: MatchStatus,

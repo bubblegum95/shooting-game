@@ -5,21 +5,15 @@ import { GameGateway } from '../gateways/game.gateway';
 import { ModuleInitLog, logger } from '../winston';
 import { AnaGateWay } from '../gateways/ana.gateway';
 import { RedisService } from '../services/redis.service';
-import { MatchService } from '../services/match.service';
-import { TeamService } from '../services/team.service';
-import { PlayerService } from '../services/player.service';
-import { UserService } from '../services/user.service';
+import { GameService } from '../services/game.service';
 
 export class SocketModule {
   private io: Server | undefined;
 
   constructor(
     private server: http.Server,
-    private matchService: MatchService,
-    private teamService: TeamService,
-    private playerService: PlayerService,
-    private userService: UserService,
-    private redisService: RedisService
+    private redisService: RedisService,
+    private gameService: GameService
   ) {
     this.init(this.server);
   }
@@ -33,11 +27,8 @@ export class SocketModule {
 
     const game = new GameGateway(
       this.io.of('/game'),
-      this.matchService,
-      this.teamService,
-      this.playerService,
-      this.userService,
-      this.redisService
+      this.redisService,
+      this.gameService
     );
     const ana = new AnaGateWay(this.io.of('/game'), this.redisService);
 

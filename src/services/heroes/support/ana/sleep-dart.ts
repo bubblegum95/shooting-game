@@ -4,7 +4,7 @@ import { Namespace } from 'socket.io';
 import { RedisService } from '../../../redis.service';
 import { Ana } from './ana';
 import { LethalSkill } from '../../lethal-skill';
-import { renewMatchStatus } from '../../renewMatchStatus';
+import { resetMatchStatus } from '../../renewMatchStatus';
 
 export class SleepDart extends LethalSkill {
   constructor(
@@ -14,7 +14,7 @@ export class SleepDart extends LethalSkill {
     public duration: number,
     public power: number
   ) {
-    super(name, isActive, cooltime, duration, power);
+    super(name, isActive, cooltime);
     logger.info(ModuleInitLog, { filename: 'SleepDart' });
   }
 
@@ -36,11 +36,11 @@ export class SleepDart extends LethalSkill {
   ) {
     if (this.isActive) {
       this.isActive = false;
-      await renewMatchStatus(io, redisService, player);
+      await resetMatchStatus(io, redisService, player);
 
       setTimeout(async () => {
         this.isActive = true;
-        await renewMatchStatus(io, redisService, player);
+        await resetMatchStatus(io, redisService, player);
       }, this.cooltime);
 
       if (target) {
@@ -61,11 +61,11 @@ Hero.prototype.sleep = async function (
 ) {
   this.isAsleep = true;
   console.log(`${this.name} is now asleep.`);
-  await renewMatchStatus(io, redisService, player);
+  await resetMatchStatus(io, redisService, player);
 
   setTimeout(async () => {
     this.isAsleep = false;
-    await renewMatchStatus(io, redisService, player);
+    await resetMatchStatus(io, redisService, player);
     console.log(`${this.name} woke up.`);
   }, duration);
 };

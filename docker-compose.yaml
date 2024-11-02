@@ -1,0 +1,7 @@
+services:
+  asyncapi-generator:
+    image: asyncapi/generator
+    volumes:
+      - ./asyncapi.yml:/app/asyncapi.yml # AsyncAPI 스펙 파일을 마운트
+      - ./output:/app/output # 생성된 파일을 저장할 로컬 경로
+    command: -o /app/output /app/asyncapi.yml html

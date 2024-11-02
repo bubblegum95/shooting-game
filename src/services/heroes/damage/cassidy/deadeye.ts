@@ -2,7 +2,7 @@ import { Namespace } from 'socket.io';
 import { LethalSkill } from '../../lethal-skill';
 import { RedisService } from '../../../redis.service';
 import { Hero } from '../../hero';
-import { renewMatchStatus } from '../../renewMatchStatus';
+import { resetMatchStatus } from '../../renewMatchStatus';
 
 export class Deadeye extends LethalSkill {
   constructor(
@@ -16,7 +16,7 @@ export class Deadeye extends LethalSkill {
 
   async isUseable(io: Namespace, redisService: RedisService, player: Hero) {
     this.isActive = true;
-    await renewMatchStatus(io, redisService, player);
+    await resetMatchStatus(io, redisService, player);
   }
 
   async use(
@@ -26,7 +26,7 @@ export class Deadeye extends LethalSkill {
     targets: Hero[]
   ) {
     this.isActive = false;
-    await renewMatchStatus(io, redisService, player);
+    await resetMatchStatus(io, redisService, player);
 
     if (targets) {
       for (const target of targets) {

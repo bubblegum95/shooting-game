@@ -10,21 +10,21 @@ import { AppModule } from './modules/app.module';
 dotenv.config();
 
 const app = express();
+const port = process.env.PORT;
+
+app.set('port', port);
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+const httpServer = http.createServer(app);
+const appModule = new AppModule(app, httpServer);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
-
-const httpServer = http.createServer(app);
-const appModule = new AppModule(app, httpServer);
-const port = process.env.PORT;
-app.set('port', port);
 
 httpServer.listen(port, () => {
   console.log(`Server running on port ${port}`);

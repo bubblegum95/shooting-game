@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -19,6 +20,9 @@ export class Team {
 
   @Column({ type: 'int', default: 0, nullable: false })
   wins: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
 
   @ManyToOne(() => Match, (match) => match.teams)
   @JoinColumn({ name: 'matchId' })

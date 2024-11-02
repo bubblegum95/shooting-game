@@ -3,8 +3,8 @@ import { Hero } from '../../hero';
 import { RedisService } from '../../../redis.service';
 import { Ana } from './ana';
 import { ModuleInitLog, logger } from '../../../../winston';
-import { renewMatchStatus } from '../../renewMatchStatus';
 import { LethalSkill } from '../../lethal-skill';
+import { resetMatchStatus } from '../../renewMatchStatus';
 
 export class BioticRifle extends LethalSkill {
   constructor(
@@ -17,7 +17,7 @@ export class BioticRifle extends LethalSkill {
     public maxBullets: number,
     public chargingTime: number // 탄창 충전 시간
   ) {
-    super(name, isActive, cooltime, power, bullets, maxBullets, chargingTime);
+    super(name, isActive, cooltime);
     logger.info(ModuleInitLog, { filename: 'BioticRifle' });
   }
 
@@ -43,11 +43,11 @@ export class BioticRifle extends LethalSkill {
   ) {
     this.bullets -= 1;
     this.isActive = false;
-    await renewMatchStatus(io, redisService, player);
+    await resetMatchStatus(io, redisService, player);
 
     setTimeout(async () => {
       this.isActive = true;
-      await renewMatchStatus(io, redisService, player);
+      await resetMatchStatus(io, redisService, player);
     }, this.cooltime);
 
     if (target) {
@@ -63,11 +63,11 @@ export class BioticRifle extends LethalSkill {
   ) {
     this.bullets -= 1;
     this.isActive = false;
-    await renewMatchStatus(io, redisService, player);
+    await resetMatchStatus(io, redisService, player);
 
     setTimeout(async () => {
       this.isActive = true;
-      await renewMatchStatus(io, redisService, player);
+      await resetMatchStatus(io, redisService, player);
     }, this.cooltime);
 
     if (target) {
@@ -91,12 +91,12 @@ export class BioticRifle extends LethalSkill {
   async useScope(io: Namespace, redisService: RedisService, player: Ana) {
     this.isScoped = true;
     player.speed -= 0.5;
-    await renewMatchStatus(io, redisService, player);
+    await resetMatchStatus(io, redisService, player);
   }
 
   async noUseScope(io: Namespace, redisService: RedisService, player: Ana) {
     this.isScoped = false;
     player.speed += 0.5;
-    await renewMatchStatus(io, redisService, player);
+    await resetMatchStatus(io, redisService, player);
   }
 }

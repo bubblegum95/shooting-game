@@ -24,7 +24,6 @@ export class Ana extends Support {
     public dead: boolean,
     public kill: number,
     public death: number,
-    public heal: number,
     public matchId: Match['id'],
     public teamId: Team['id'],
     public playerId: Player['id'],
@@ -44,7 +43,6 @@ export class Ana extends Support {
       dead,
       kill,
       death,
-      heal,
       matchId,
       teamId,
       playerId

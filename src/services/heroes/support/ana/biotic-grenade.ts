@@ -3,7 +3,7 @@ import { Hero } from '../../hero';
 import { RedisService } from '../../../redis.service';
 import { Ana } from './ana';
 import { ModuleInitLog, logger } from '../../../../winston';
-import { renewMatchStatus } from '../../renewMatchStatus';
+import { resetMatchStatus } from '../../renewMatchStatus';
 import { LethalSkill } from '../../lethal-skill';
 
 export class BioticGrenade extends LethalSkill {
@@ -14,7 +14,7 @@ export class BioticGrenade extends LethalSkill {
     public duration: number, // 치유 차단 지속시간
     public cooltime: number
   ) {
-    super(name, isActive, duration, cooltime, power);
+    super(name, isActive, duration);
     logger.info(ModuleInitLog, { filename: 'BioticGrenade' });
   }
   async powerUp(
@@ -36,20 +36,20 @@ export class BioticGrenade extends LethalSkill {
     // return 값은 io 에 보낼 결과값, socket으로 보낼 값은 쿨타임 남은 시간?
     if (this.isActive && target.playerId) {
       this.isActive = false;
-      await renewMatchStatus(io, redisService, player);
+      await resetMatchStatus(io, redisService, player);
 
       setTimeout(async () => {
         this.isActive = true;
-        await renewMatchStatus(io, redisService, player);
+        await resetMatchStatus(io, redisService, player);
       }, this.cooltime);
 
       if (target.playerId && player.team === target.team) {
         target.takeHeal(io, redisService, this.power);
-        await renewMatchStatus(io, redisService, target);
+        await resetMatchStatus(io, redisService, target);
       } else if (target.playerId && player.team !== target.team) {
         target.takeDamage(io, redisService, this.power);
         target.healBan(io, redisService, this.duration);
-        await renewMatchStatus(io, redisService, target);
+        await resetMatchStatus(io, redisService, target);
       }
     }
   }
@@ -61,10 +61,10 @@ Hero.prototype.healBan = async function (
   duration: number
 ) {
   this.isHealBan = true;
-  await renewMatchStatus(io, redisService, this);
+  await resetMatchStatus(io, redisService, this);
 
   setTimeout(async () => {
     this.isHealBan = false;
-    await renewMatchStatus(io, redisService, this);
+    await resetMatchStatus(io, redisService, this);
   }, duration);
 };

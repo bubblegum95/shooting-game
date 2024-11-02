@@ -1,4 +1,3 @@
 export enum HeroName {
-  Ana,
-  Parah,
+  Ana = 'Ana',
 }

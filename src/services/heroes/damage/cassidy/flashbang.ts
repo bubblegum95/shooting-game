@@ -3,7 +3,7 @@ import { ModuleInitLog, logger } from '../../../../winston';
 import { RedisService } from '../../../redis.service';
 import { Cassidy } from './cassidy';
 import { Hero } from '../../hero';
-import { renewMatchStatus } from '../../renewMatchStatus';
+import { resetMatchStatus } from '../../renewMatchStatus';
 import { LethalSkill } from '../../lethal-skill';
 
 export class Flashbang extends LethalSkill {
@@ -14,7 +14,7 @@ export class Flashbang extends LethalSkill {
     public cooltime: number,
     public power: number
   ) {
-    super(name, isActive, duration, cooltime);
+    super(name, isActive, duration);
     logger.info(ModuleInitLog, { filename: 'Flashbang' });
   }
 
@@ -36,17 +36,17 @@ export class Flashbang extends LethalSkill {
   ) {
     if (this.isActive) {
       this.isActive = false;
-      await renewMatchStatus(io, redisService, player);
+      await resetMatchStatus(io, redisService, player);
 
       setTimeout(async () => {
         this.isActive = true;
-        await renewMatchStatus(io, redisService, player);
+        await resetMatchStatus(io, redisService, player);
       }, this.cooltime);
 
       if (target) {
         target.isShocked = true;
         target.speed = 0;
-        await renewMatchStatus(io, redisService, player);
+        await resetMatchStatus(io, redisService, player);
         target.shock(io, redisService, this.duration);
       }
     }
@@ -60,11 +60,11 @@ Hero.prototype.shock = async function (
 ) {
   this.isShocked = true;
   const heroSpeed = this.speed;
-  await renewMatchStatus(io, redisService, this);
+  await resetMatchStatus(io, redisService, this);
 
   setTimeout(async () => {
     this.isShocked = false;
     this.speed = heroSpeed;
-    await renewMatchStatus(io, redisService, this);
+    await resetMatchStatus(io, redisService, this);
   }, duration);
 };

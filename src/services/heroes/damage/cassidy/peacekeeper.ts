@@ -2,7 +2,7 @@ import { Namespace } from 'socket.io';
 import { Cassidy } from './cassidy';
 import { Hero } from '../../hero';
 import { RedisService } from '../../../redis.service';
-import { renewMatchStatus } from '../../renewMatchStatus';
+import { resetMatchStatus } from '../../renewMatchStatus';
 import { ModuleInitLog, logger } from '../../../../winston';
 import { LethalSkill } from '../../lethal-skill';
 
@@ -16,7 +16,7 @@ export class Peacekeeper extends LethalSkill {
     public power: number,
     public chargingTime: number
   ) {
-    super(name, isActive, cooltime, bullets, maxBullets, chargingTime);
+    super(name, isActive, cooltime);
     logger.info(ModuleInitLog, { filename: 'Peachkeeper' });
   }
 
@@ -46,16 +46,16 @@ export class Peacekeeper extends LethalSkill {
   ) {
     this.bullets -= 1;
     this.isActive = false;
-    await renewMatchStatus(io, redisService, player);
+    await resetMatchStatus(io, redisService, player);
 
     setTimeout(async () => {
       this.isActive = true;
-      await renewMatchStatus(io, redisService, player);
+      await resetMatchStatus(io, redisService, player);
     }, this.cooltime);
 
     if (target) {
       target.health -= this.power;
-      await renewMatchStatus(io, redisService, target);
+      await resetMatchStatus(io, redisService, target);
     }
   }
 
@@ -67,11 +67,11 @@ export class Peacekeeper extends LethalSkill {
   ) {
     for (let i = 0; i < this.bullets; i++) {
       this.bullets -= 1;
-      await this.renewMatchStatus(io, redisService, player);
+      await this.resetMatchStatus(io, redisService, player);
 
       if (target) {
         target.health -= this.power;
-        await this.renewMatchStatus(io, redisService, target);
+        await this.resetMatchStatus(io, redisService, target);
       }
     }
     await this.chargeBullets(io, redisService, player);
