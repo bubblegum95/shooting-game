@@ -1,0 +1,19 @@
+asyncapi: '2.0.0'
+info:
+  title: Shooting Game Mini Overwatch
+  version: '1.0.0'
+  description: This is an example AsyncAPI document.
+servers:
+  production:
+    url: 'api.example.com'
+    protocol: wss
+channels:
+  game:
+    address: 'game'
+      message:
+        contentType: application/json
+        payload:
+          type: object
+          properties:
+            exampleField:
+              type: string
