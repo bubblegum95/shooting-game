@@ -4,10 +4,14 @@ import { Match } from '../entities/match.entity';
 import { Player } from '../entities/player.entity';
 import { ModuleInitLog, logger } from '../winston';
 import { RedisService } from '../services/redis.service';
-import { matchStatus } from '../services/heroes/renewMatchStatus';
+import {
+  matchStatus,
+  resetMatchStatus,
+} from '../services/heroes/renewMatchStatus';
 import { CreateMatchDto } from '../dto/create-match.dto';
 import { GameService } from '../services/game.service';
 import { MatchStatus } from '../types/match-status.type';
+import { BattleFieldEnum } from '../types/battle-field.enum';
 
 export class GameGateway {
   private logname = { filename: 'GameGateway' };
@@ -50,7 +54,6 @@ export class GameGateway {
       socket.on('match:list', async (dto: { page: number; limit: number }) => {
         try {
           const { page, limit } = dto;
-          console.log(dto);
           const list = await this.gameService.getMatchList(page, limit);
           socket.emit('match:list', list);
         } catch (error) {
@@ -60,28 +63,21 @@ export class GameGateway {
       });
 
       // 매칭 및 팀 생성
-      socket.on(
-        'match:status:create',
-        async (dto: { type: keyof typeof BattleField; password?: string }) => {
-          try {
-            const { error, value } = CreateMatchDto.validate(dto);
-            if (error) {
-              throw new Error(`${error}: ${value}`);
-            }
-            const { type, password } = dto;
-            const match = await this.gameService.createMatch(
-              userId,
-              type,
-              password
-            );
-            await this.gameService.participateTeam(socket, userId, match.id);
-            await matchStatus(this.io, this.redisService, match.id);
-          } catch (error) {
-            socket.emit('error', error);
-            console.log(error);
+      socket.on('match:status:create', async (dto: { password?: string }) => {
+        try {
+          const { error, value } = CreateMatchDto.validate(dto);
+          if (error) {
+            throw new Error(`${error}: ${value}`);
           }
+          const { password } = dto;
+          const match = await this.gameService.createMatch(userId, password);
+          await this.gameService.participateTeam(socket, userId, match.id);
+          await matchStatus(this.io, this.redisService, match.id);
+        } catch (error) {
+          socket.emit('error', error);
+          console.log(error);
         }
-      );
+      });
 
       // 매칭 초대시
       socket.on(
@@ -106,7 +102,6 @@ export class GameGateway {
         async (dto: { matchId: Match['id']; password: Match['password'] }) => {
           try {
             const { matchId, password } = dto;
-            console.log(dto);
             await this.gameService.participateMatch(
               socket,
               userId,
@@ -164,7 +159,10 @@ export class GameGateway {
               throw new Error('아직 영웅을 선택할 수 없습니다.');
             }
             const hero = await this.gameService.chooseHero(playerId, heroName);
-            socket.emit('match:hero:choice', hero);
+            const matchStatus = await this.redisService.getMatchStatus(
+              hero.matchId
+            );
+            socket.emit('match:hero:choice', hero, matchStatus);
           } catch (error) {
             console.log(error);
             socket.emit('error', error);

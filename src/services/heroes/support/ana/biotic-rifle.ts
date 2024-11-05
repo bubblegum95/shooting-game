@@ -3,7 +3,7 @@ import { Hero } from '../../hero';
 import { RedisService } from '../../../redis.service';
 import { Ana } from './ana';
 import { ModuleInitLog, logger } from '../../../../winston';
-import { LethalSkill } from '../../lethal-skill';
+import { LethalSkill } from '../../../skill/lethal.skill';
 import { resetMatchStatus } from '../../renewMatchStatus';
 
 export class BioticRifle extends LethalSkill {
@@ -12,12 +12,13 @@ export class BioticRifle extends LethalSkill {
     public isActive: boolean,
     public cooltime: number,
     public power: number, // 치유량 또는 공격량
+    public point: number, // 궁극기 게이지 포인트
     public isScoped: boolean,
     public bullets: number,
     public maxBullets: number,
     public chargingTime: number // 탄창 충전 시간
   ) {
-    super(name, isActive, cooltime);
+    super(name, isActive, cooltime, power, point);
     logger.info(ModuleInitLog, { filename: 'BioticRifle' });
   }
 
@@ -35,24 +36,30 @@ export class BioticRifle extends LethalSkill {
     super.powerUp(io, redisService, player, increase, duration);
   }
 
+  async shot(io: Namespace, redisService: RedisService, player: Ana) {
+    if (this.bullets > 0 && this.isActive) {
+      this.bullets -= 1;
+      this.isActive = false;
+      await resetMatchStatus(io, redisService, player);
+
+      setTimeout(async () => {
+        this.isActive = true;
+        await resetMatchStatus(io, redisService, player);
+      }, this.cooltime);
+    } else if (this.bullets <= 0) {
+      this.chargeBullets(io, redisService, player);
+    }
+  }
+
   async heal(
     io: Namespace,
     redisService: RedisService,
     player: Ana,
     target: Hero
   ) {
-    this.bullets -= 1;
-    this.isActive = false;
+    target.takeHeal(io, redisService, this.power);
+    player.ultimate += this.point;
     await resetMatchStatus(io, redisService, player);
-
-    setTimeout(async () => {
-      this.isActive = true;
-      await resetMatchStatus(io, redisService, player);
-    }, this.cooltime);
-
-    if (target) {
-      target.takeHeal(io, redisService, this.power);
-    }
   }
 
   async attack(
@@ -61,21 +68,11 @@ export class BioticRifle extends LethalSkill {
     player: Hero,
     target: Hero
   ) {
-    this.bullets -= 1;
-    this.isActive = false;
+    target.takeDamage(io, redisService, this.power);
     await resetMatchStatus(io, redisService, player);
-
-    setTimeout(async () => {
-      this.isActive = true;
-      await resetMatchStatus(io, redisService, player);
-    }, this.cooltime);
-
-    if (target) {
-      target.takeDamage(io, redisService, this.power);
-    }
   }
 
-  async attackAndHeal(
+  async heat(
     io: Namespace,
     redisService: RedisService,
     player: Ana,

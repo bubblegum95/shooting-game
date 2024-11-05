@@ -1,10 +1,16 @@
+import { Namespace } from 'socket.io';
 import { Match } from '../../../../entities/match.entity';
 import { Player } from '../../../../entities/player.entity';
 import { Team } from '../../../../entities/team.entity';
 import { HeroName } from '../../../../types/hero-name.type';
 import { Role } from '../../../../types/role.type';
 import { ModuleInitLog, logger } from '../../../../winston';
+import { RedisService } from '../../../redis.service';
+import { Hero } from '../../hero';
 import { Damage } from '../damage';
+import { Deadeye } from './deadeye';
+import { Flashbang } from './flashbang';
+import { Peacekeeper } from './peacekeeper';
 
 export class Cassidy extends Damage {
   constructor(
@@ -20,7 +26,12 @@ export class Cassidy extends Damage {
     public death: number,
     public matchId: Match['id'],
     public teamId: Team['id'],
-    public playerId: Player['id']
+    public playerId: Player['id'],
+    public skills: {
+      peacekeeper: Peacekeeper;
+      flashbang: Flashbang;
+      deadeye: Deadeye;
+    }
   ) {
     super(
       name,
@@ -39,5 +50,43 @@ export class Cassidy extends Damage {
     );
 
     logger.info(ModuleInitLog, { filename: 'Cassidy' });
+  }
+
+  async takeDamage(io: Namespace, redisService: RedisService, amount: number) {
+    await super.takeDamage(io, redisService, amount);
+  }
+
+  async takeHeal(io: Namespace, redisService: RedisService, amount: number) {
+    await super.takeHeal(io, redisService, amount);
+  }
+
+  async die(io: Namespace, redisService: RedisService) {
+    await super.die(io, redisService);
+  }
+
+  async shot(io: Namespace, redisService: RedisService) {
+    await this.skills.peacekeeper.shot(io, redisService, this);
+  }
+
+  async heat(io: Namespace, redisService: RedisService, target: Hero) {
+    await this.skills.peacekeeper.heat(io, redisService, this, target);
+  }
+
+  async rampage(io: Namespace, redisService: RedisService) {
+    if (this.isAlive && !this.isShocked) {
+      await this.skills.peacekeeper.useRampage(io, redisService, this);
+    }
+  }
+
+  async useFlashbang(io: Namespace, redisService: RedisService) {
+    await this.skills.flashbang.use(io, redisService, this);
+  }
+
+  async useFlashbangTo(
+    io: Namespace,
+    redisService: RedisService,
+    target: Hero
+  ) {
+    await this.skills.flashbang.to(io, redisService, this, target);
   }
 }

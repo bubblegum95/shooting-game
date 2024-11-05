@@ -21,16 +21,18 @@ export class Ana extends Support {
     public speed: number,
     public ultimate: number,
     public maxUltimate: number,
-    public dead: boolean,
+    public isAlive: boolean,
     public kill: number,
     public death: number,
     public matchId: Match['id'],
     public teamId: Team['id'],
     public playerId: Player['id'],
-    public bioticGrenade: BioticGrenade,
-    public nanoBoost: NanoBoost,
-    public sleepDart: SleepDart,
-    public bioticRifle: BioticRifle
+    public skills: {
+      bioticRifle: BioticRifle;
+      bioticGrenade: BioticGrenade;
+      sleepDart: SleepDart;
+      nanoBoost: NanoBoost;
+    }
   ) {
     super(
       name,
@@ -40,60 +42,93 @@ export class Ana extends Support {
       speed,
       ultimate,
       maxUltimate,
-      dead,
+      isAlive,
       kill,
       death,
       matchId,
       teamId,
-      playerId
+      playerId,
+      skills
     );
   }
 
   async takeDamage(io: Namespace, redisService: RedisService, amount: number) {
-    return super.takeDamage(io, redisService, amount);
+    await super.takeDamage(io, redisService, amount);
   }
 
   async takeHeal(io: Namespace, redisService: RedisService, amount: number) {
-    return await super.takeHeal(io, redisService, amount);
+    await super.takeHeal(io, redisService, amount);
   }
 
-  async usesBioticGrenade(
+  async die(io: Namespace, redisService: RedisService) {
+    await super.die(io, redisService);
+  }
+
+  async shot(io: Namespace, redisService: RedisService) {
+    if (this.isAlive) {
+      await this.skills.bioticRifle.shot(io, redisService, this);
+    }
+  }
+
+  async heat(io: Namespace, redisService: RedisService, target: Hero) {
+    await this.skills.bioticRifle.heat(io, redisService, this, target);
+  }
+
+  async useScope(io: Namespace, redisService: RedisService) {
+    if (this.isAlive && !this.isShocked) {
+      await this.skills.bioticRifle.useScope(io, redisService, this);
+    }
+  }
+
+  async noUseScope(io: Namespace, redisService: RedisService) {
+    if (this.isAlive && !this.isShocked) {
+      await this.skills.bioticRifle.noUseScope(io, redisService, this);
+    }
+  }
+
+  async chargeBullets(io: Namespace, redisService: RedisService) {
+    if (this.isAlive) {
+      await this.skills.bioticRifle.chargeBullets(io, redisService, this);
+    }
+  }
+
+  async usesBioticGrenade(io: Namespace, redisService: RedisService) {
+    if (this.isAlive && !this.isShocked) {
+      await this.skills.bioticGrenade.use(io, redisService, this);
+    }
+  }
+
+  async usesBioticGrenadeTo(
     io: Namespace,
     redisService: RedisService,
     target: Hero
   ) {
-    if (this.bioticGrenade['isActive']) {
-      return await this.bioticGrenade.useTo(io, redisService, this, target);
+    await this.skills.bioticGrenade.to(io, redisService, this, target);
+  }
+
+  async usesSleepDart(io: Namespace, redisService: RedisService) {
+    if (this.isAlive && !this.isShocked) {
+      await this.skills.sleepDart.use(io, redisService, this);
     }
   }
 
-  async usesSleepDart(io: Namespace, redisService: RedisService, target: Hero) {
-    await this.sleepDart.useTo(io, redisService, this, target);
+  async usesSleepDartTo(
+    io: Namespace,
+    redisService: RedisService,
+    target: Hero
+  ) {
+    await this.skills.sleepDart.to(io, redisService, this, target);
   }
 
   async chargeNanoBoost(io: Namespace, redisService: RedisService) {
     if (this.ultimate >= this.maxUltimate) {
-      await this.nanoBoost.isUseable(io, redisService, this);
+      await this.skills.nanoBoost.isUseable(io, redisService, this);
     }
   }
 
   async usesNanoBoost(io: Namespace, redisService: RedisService, target: Hero) {
-    await this.nanoBoost.useTo(io, redisService, this, target);
-  }
-
-  async attackAndHeal(io: Namespace, redisService: RedisService, target: Hero) {
-    await this.bioticRifle.attackAndHeal(io, redisService, this, target);
-  }
-
-  async useScope(io: Namespace, redisService: RedisService) {
-    await this.bioticRifle.useScope(io, redisService, this);
-  }
-
-  async noUseScope(io: Namespace, redisService: RedisService) {
-    await this.bioticRifle.noUseScope(io, redisService, this);
-  }
-
-  async chargeBullets(io: Namespace, redisService: RedisService) {
-    await this.bioticRifle.chargeBullets(io, redisService, this);
+    if (this.isAlive && !this.isShocked) {
+      await this.skills.nanoBoost.useTo(io, redisService, this, target);
+    }
   }
 }

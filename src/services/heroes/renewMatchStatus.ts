@@ -21,6 +21,6 @@ export const matchStatus = async function (
   matchId: Match['id']
 ) {
   const result = await redisService.getMatchStatus(matchId);
-  io.to(matchId).emit('match:status:get', result);
+  io.in(matchId).emit('match:status:get', result);
   return result;
 };

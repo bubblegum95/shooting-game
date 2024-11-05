@@ -10,14 +10,22 @@ import { HeroName } from './hero-name.type';
 import { Role } from './role.type';
 
 // Support : Ana
-const bioticGrenade = new BioticGrenade('bioticGrenade', true, 1.5, 3000, 12);
-const sleepDart = new SleepDart('sleepDart', true, 10000, 3000, 20);
+const bioticGrenade = new BioticGrenade(
+  'bioticGrenade',
+  true,
+  1.5,
+  20,
+  3000,
+  12
+);
+const sleepDart = new SleepDart('sleepDart', true, 10000, 3000, 20, 30);
 const nanoBoost = new NanoBoost('nanoBoost', false, 5000, 1.5);
 const bioticRifle = new BioticRifle(
   'bioticRifle',
   true,
   1000 * 1.6, // 스킬 쿨타임
   30,
+  10,
   false,
   12,
   12,
@@ -46,10 +54,7 @@ export const Heroes = function (
         matchId,
         teamId,
         playerId,
-        bioticGrenade,
-        nanoBoost,
-        sleepDart,
-        bioticRifle
+        { bioticRifle, bioticGrenade, sleepDart, nanoBoost }
       );
 
     default:
