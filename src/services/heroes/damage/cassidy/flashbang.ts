@@ -4,7 +4,7 @@ import { RedisService } from '../../../redis.service';
 import { Cassidy } from './cassidy';
 import { Hero } from '../../hero';
 import { resetMatchStatus } from '../../renewMatchStatus';
-import { LethalSkill } from '../../lethal-skill';
+import { LethalSkill } from '../../../skill/lethal.skill';
 
 export class Flashbang extends LethalSkill {
   constructor(
@@ -12,9 +12,10 @@ export class Flashbang extends LethalSkill {
     public isActive: boolean,
     public duration: number,
     public cooltime: number,
-    public power: number
+    public power: number,
+    public point: number
   ) {
-    super(name, isActive, duration);
+    super(name, isActive, cooltime, power, point);
     logger.info(ModuleInitLog, { filename: 'Flashbang' });
   }
 
@@ -28,12 +29,7 @@ export class Flashbang extends LethalSkill {
     super.powerUp(io, redisService, player, increase, duration);
   }
 
-  async useFlashbang(
-    io: Namespace,
-    redisService: RedisService,
-    player: Cassidy,
-    target: Hero
-  ) {
+  async use(io: Namespace, redisService: RedisService, player: Cassidy) {
     if (this.isActive) {
       this.isActive = false;
       await resetMatchStatus(io, redisService, player);
@@ -42,29 +38,34 @@ export class Flashbang extends LethalSkill {
         this.isActive = true;
         await resetMatchStatus(io, redisService, player);
       }, this.cooltime);
-
-      if (target) {
-        target.isShocked = true;
-        target.speed = 0;
-        await resetMatchStatus(io, redisService, player);
-        target.shock(io, redisService, this.duration);
-      }
     }
+  }
+
+  async to(
+    io: Namespace,
+    redisService: RedisService,
+    player: Cassidy,
+    target: Hero
+  ) {
+    target.takeDamage(io, redisService, this.power);
+    target.shocked(io, redisService, this.duration);
+    await resetMatchStatus(io, redisService, player);
   }
 }
 
-Hero.prototype.shock = async function (
+Hero.prototype.shocked = async function (
   io: Namespace,
   redisService: RedisService,
   duration: number
 ) {
-  this.isShocked = true;
-  const heroSpeed = this.speed;
-  await resetMatchStatus(io, redisService, this);
-
-  setTimeout(async () => {
-    this.isShocked = false;
-    this.speed = heroSpeed;
+  if (this.isAlive) {
+    this.isShocked = true;
+    this.isNotAbleToUseSkillsDuring(duration);
     await resetMatchStatus(io, redisService, this);
-  }, duration);
+
+    setTimeout(async () => {
+      this.isShocked = false;
+      await resetMatchStatus(io, redisService, this);
+    }, duration);
+  }
 };

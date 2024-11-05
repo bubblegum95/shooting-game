@@ -3,9 +3,9 @@ import http from 'http';
 import { ChatGateway } from '../gateways/chat.gateway';
 import { GameGateway } from '../gateways/game.gateway';
 import { ModuleInitLog, logger } from '../winston';
-import { AnaGateWay } from '../gateways/ana.gateway';
 import { RedisService } from '../services/redis.service';
 import { GameService } from '../services/game.service';
+import { AnaGateWay } from '../gateways/heroes/support/ana.gateway';
 
 export class SocketModule {
   private io: Server | undefined;

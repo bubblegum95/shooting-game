@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { Team } from './team.entity';
 import { MatchStatus } from '../types/match-status.type';
+import { Player } from './player.entity';
 
 @Entity({ name: 'match' })
 export class Match {
@@ -15,9 +16,6 @@ export class Match {
 
   @Column({ type: 'varchar', nullable: false })
   ownerId: string;
-
-  @Column({ type: 'varchar', nullable: false })
-  type: keyof typeof BattleField;
 
   @Column({ type: 'varchar', nullable: true, length: 10 })
   password?: string | null;
@@ -35,4 +33,7 @@ export class Match {
 
   @OneToMany(() => Team, (team) => team.match)
   teams: Team[];
+
+  @OneToMany(() => Player, (players) => players.match)
+  players: Player[];
 }

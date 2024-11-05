@@ -3,10 +3,10 @@ import { Hero } from '../../hero';
 import { Ana } from './ana';
 import { RedisService } from '../../../redis.service';
 import { ModuleInitLog, logger } from '../../../../winston';
-import { Skill } from '../../skill';
 import { resetMatchStatus } from '../../renewMatchStatus';
+import { UltimateSkill } from '../../../skill/ultimate.skill';
 
-export class NanoBoost extends Skill {
+export class NanoBoost extends UltimateSkill {
   constructor(
     public name: string,
     public isActive: boolean, // 활성화
@@ -18,8 +18,7 @@ export class NanoBoost extends Skill {
   }
 
   async isUseable(io: Namespace, redisService: RedisService, player: Ana) {
-    this.isActive = true;
-    await resetMatchStatus(io, redisService, player);
+    super.isUseable(io, redisService, player);
   }
 
   async useTo(

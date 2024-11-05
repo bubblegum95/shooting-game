@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Team } from './team.entity';
+import { Match } from './match.entity';
 
 @Entity()
 export class Player {
@@ -28,4 +29,8 @@ export class Player {
   @ManyToOne(() => Team, (team) => team.players)
   @JoinColumn({ name: 'teamId' })
   team: Team;
+
+  @ManyToOne(() => Match, (match) => match.players)
+  @JoinColumn({ name: 'matchId' })
+  match: Match[];
 }

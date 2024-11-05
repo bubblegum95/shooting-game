@@ -1,7 +1,7 @@
 import { Namespace } from 'socket.io';
 import { RedisService } from '../redis.service';
-import { Hero } from './hero';
-import { resetMatchStatus } from './renewMatchStatus';
+import { Hero } from '../heroes/hero';
+import { resetMatchStatus } from '../heroes/renewMatchStatus';
 import { Skill } from './skill';
 
 export class LethalSkill extends Skill {
@@ -9,7 +9,9 @@ export class LethalSkill extends Skill {
   constructor(
     public name: string,
     public isActive: boolean,
-    public power: number
+    public cooltime: number,
+    public power: number,
+    public point: number
   ) {
     super(name, isActive);
   }

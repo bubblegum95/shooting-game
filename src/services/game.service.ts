@@ -12,6 +12,7 @@ import { TeamService } from './team.service';
 import { UserService } from './user.service';
 import { AppDataSource } from '../data-source';
 import { MatchStatus } from '../types/match-status.type';
+import { ModuleInitLog, logger } from '../winston';
 
 export class GameService {
   constructor(
@@ -20,22 +21,24 @@ export class GameService {
     private userService: UserService,
     private playerService: PlayerService,
     private teamService: TeamService
-  ) {}
-
-  async createMatch(
-    ownerId: User['id'],
-    type: keyof typeof BattleField,
-    password?: string
   ) {
+    logger.info(ModuleInitLog, { filename: 'GameService' });
+  }
+
+  async createMatch(ownerId: User['id'], password?: string) {
     try {
-      return await this.initMatch(ownerId, type, password);
+      return await this.initMatch(ownerId, password);
     } catch (error) {
       throw error;
     }
   }
 
   async getMatchList(page: number, limit: number) {
-    return this.matchService.find(page, limit);
+    const lists = await this.matchService.find(page, limit);
+    const players = lists.map((list) => {
+      list.players.length;
+    });
+    return { ...lists, players };
   }
 
   async invitePlayers(dto: {
@@ -99,22 +102,6 @@ export class GameService {
     return this.matchService.findOne(matchId);
   }
 
-  async chooseHero(playerId: Player['id'], heroName: string) {
-    try {
-      const player = await this.findPlayer(playerId);
-      if (!player) {
-        throw new Error('플레이어가 존재하지 않습니다.');
-      }
-
-      const hero = Heroes(heroName, player.matchId, player.teamId, playerId);
-      await this.redisService.setPlayerProperties(playerId, hero);
-      await this.redisService.setTeamPlayer(player.teamId, playerId);
-      return hero;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   async participateTeam(
     socket: Socket,
     userId: User['id'],
@@ -145,43 +132,22 @@ export class GameService {
       if (!player) {
         throw new Error('플레이어를 생성할 수 없습니다.');
       }
+      playerList.push(player);
 
       socket.join(matchId);
       socket.join(teamId);
+      console.log('전장에 오신 것을 환영합니다.');
       socket.emit('message', '전장에 오신 것을 환영합니다.');
-      socket.emit('match:participate', { matchId, teamId, player });
+      socket.emit('match:participate', {
+        matchId,
+        teamId,
+        playerId: player.id,
+        playerList,
+      });
 
       return player;
     } catch (error) {
       throw error;
-    }
-  }
-
-  async initMatch(
-    ownerId: User['id'],
-    type: keyof typeof BattleField,
-    password?: string
-  ) {
-    const queryRunner = AppDataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      const match = await queryRunner.manager.save(Match, {
-        ownerId,
-        type,
-        password,
-      });
-      const team1 = await queryRunner.manager.save(Team, { matchId: match.id });
-      const team2 = await queryRunner.manager.save(Team, { matchId: match.id });
-      await queryRunner.commitTransaction();
-      await this.redisService.setMatchTeams(match.id, team1.id, team2.id);
-      return match;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
     }
   }
 
@@ -204,6 +170,45 @@ export class GameService {
         }
         await this.participateTeam(socket, userId, match.id);
       }
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async initMatch(ownerId: User['id'], password?: string) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const match = await queryRunner.manager.save(Match, {
+        ownerId,
+        password,
+      });
+      const team1 = await queryRunner.manager.save(Team, { matchId: match.id });
+      const team2 = await queryRunner.manager.save(Team, { matchId: match.id });
+      await queryRunner.commitTransaction();
+      await this.redisService.setMatchTeams(match.id, team1.id, team2.id);
+      return match;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async chooseHero(playerId: Player['id'], heroName: string) {
+    try {
+      const player = await this.findPlayer(playerId);
+      if (!player) {
+        throw new Error('플레이어가 존재하지 않습니다.');
+      }
+
+      const hero = Heroes(heroName, player.matchId, player.teamId, playerId);
+      await this.redisService.setPlayerProperties(playerId, hero);
+      await this.redisService.setTeamPlayer(player.teamId, playerId);
+      return hero;
     } catch (error) {
       throw error;
     }
