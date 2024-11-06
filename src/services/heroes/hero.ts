@@ -7,7 +7,6 @@ import { Player } from '../../entities/player.entity';
 import { Team } from '../../entities/team.entity';
 import { resetMatchStatus } from './renewMatchStatus';
 import { Skill } from '../skill/skill';
-import { BasicSkill } from '../skill/basic.skill';
 
 export class Hero {
   [key: string]: any; // 인덱스 시그니처로 동적 속성 허용
@@ -48,14 +47,26 @@ export class Hero {
     }
   }
 
-  async takeDamage(io: Namespace, redisService: RedisService, power: number) {
+  async takeKill(io: Namespace, redisService: RedisService) {
+    this.kill += 1;
+    await resetMatchStatus(io, redisService, this);
+  }
+
+  async takeDamage(
+    io: Namespace,
+    redisService: RedisService,
+    power: number,
+    callback: (io: Namespace, redisService: RedisService) => void
+  ) {
     if (this.isAlive) {
       this.health -= power;
       await resetMatchStatus(io, redisService, this);
 
       if (this.health <= 0) {
-        await this.dieNRespawn(io, redisService);
+        this.health = 0;
+        await this.die(io, redisService);
         await resetMatchStatus(io, redisService, this);
+        callback(io, redisService);
       }
     }
   }
@@ -69,31 +80,6 @@ export class Hero {
         this.health = this.maxHealth;
         await resetMatchStatus(io, redisService, this);
       }
-    }
-  }
-
-  // this.isShocked 상태일 때 캐릭터 스킬 비활성화 하는 로직
-  // basic Skill 을 제외한 모든 스킬을 비활성화.. this가 instanceof BasicSkill가 아니라면
-  // this를 순회하려면..?? this 중에서 skill만 어떻게 가져올 것인가? -> skills : Skill[] 을 추가해서 스킬을 순회하며 instanceof 로 필터링
-  exceptBasicSkill(duration: number) {
-    Object.values(this.skills).forEach((skill) => {
-      if (!(skill instanceof BasicSkill)) {
-        skill.isActive = false;
-      }
-    });
-
-    setTimeout(() => {
-      Object.values(this.skills).forEach((skill) => {
-        if (!(skill instanceof BasicSkill)) {
-          skill.isActive = true;
-        }
-      });
-    }, duration);
-  }
-
-  async isNotAbleToUseSkillsDuring(duration: number) {
-    if (this.isShocked === true) {
-      this.exceptBasicSkill(duration);
     }
   }
 }

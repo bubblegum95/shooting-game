@@ -6,54 +6,55 @@ import { Ana } from '../../../services/heroes/support/ana/ana';
 
 export class AnaGateWay {
   constructor(private io: Namespace, private redisService: RedisService) {
-    this.socketInit();
+    this.init();
     logger.info(ModuleInitLog, { filename: 'AnaGateway' });
   }
 
-  socketInit() {
+  init() {
     this.io.on('connection', (socket) => {
       socket.on('ana:get', ({ ana }) => {
         this.getHero(ana);
       });
+
       socket.on('ana:bioticRifle:use', ({ ana }) => {
-        this.useBioticRifle(this.io, ana);
+        this.useBioticRifle(ana);
       });
 
-      socket.on('ana:bioticRifle:heat', ({ ana, target }) => {
-        this.useBioticRifleTo(this.io, ana, target);
+      socket.on('ana:bioticRifle:to', ({ ana, target }) => {
+        this.useBioticRifleTo(ana, target);
       });
 
       socket.on('ana:scope:use', ({ ana }) => {
-        this.useScope(this.io, ana);
+        this.useScope(ana);
       });
 
       socket.on('ana:scope:noUse', ({ ana }) => {
-        this.noUseScope(this.io, ana);
+        this.noUseScope(ana);
       });
 
       socket.on('ana:sleepDart:use', ({ ana }) => {
-        this.useSleepDart(this.io, ana);
+        this.useSleepDart(ana);
       });
 
-      socket.on('ana:sleepDart:heat', ({ ana, target }) => {
-        this.useSleepDartTo(this.io, ana, target);
+      socket.on('ana:sleepDart:to', ({ ana, target }) => {
+        this.useSleepDartTo(ana, target);
       });
 
-      socket.on('ana:BioticGrenade:use', ({ ana }) => {
-        this.useBioticGrenade(this.io, ana);
+      socket.on('ana:bioticGrenade:use', ({ ana }) => {
+        this.useBioticGrenade(ana);
       });
 
-      socket.on('ana:BioticGrenade:heat', ({ ana, target }) => {
-        this.useBioticGrenadeTo(this.io, ana, target);
+      socket.on('ana:bioticGrenade:to', ({ ana, target }) => {
+        this.useBioticGrenadeTo(ana, target);
       });
 
       socket.on('ana:nanoBoost:useTo', ({ ana, target }) => {
         // 나노 강화제 타겟 반드시 필요
-        this.useNanoBoost(this.io, ana, target);
+        this.useNanoBoost(ana, target);
       });
 
       socket.on('ana:bioticRifle:chargeBullets', ({ ana }) => {
-        this.chargeBullets(this.io, ana);
+        this.chargeBullets(ana);
       });
     });
   }
@@ -63,43 +64,43 @@ export class AnaGateWay {
     console.log(hero);
   }
 
-  async useBioticRifle(io: Namespace, ana: Ana) {
-    await ana.shot(io, this.redisService);
+  async useBioticRifle(ana: Ana) {
+    await ana.shot(this.io, this.redisService);
   }
 
-  async useBioticRifleTo(io: Namespace, ana: Ana, target: Hero) {
-    await ana.heat(io, this.redisService, target);
+  async useBioticRifleTo(ana: Ana, target: Hero) {
+    await ana.heat(this.io, this.redisService, target);
   }
 
-  async useScope(io: Namespace, ana: Ana) {
-    await ana.useScope(io, this.redisService);
+  async useScope(ana: Ana) {
+    await ana.useScope(this.io, this.redisService);
   }
 
-  async noUseScope(io: Namespace, ana: Ana) {
-    await ana.noUseScope(io, this.redisService);
+  async noUseScope(ana: Ana) {
+    await ana.noUseScope(this.io, this.redisService);
   }
 
-  async useSleepDart(io: Namespace, ana: Ana) {
-    await ana.usesSleepDart(io, this.redisService);
+  async useSleepDart(ana: Ana) {
+    await ana.usesSleepDart(this.io, this.redisService);
   }
 
-  async useSleepDartTo(io: Namespace, ana: Ana, target: Hero) {
-    await ana.usesSleepDartTo(io, this.redisService, target);
+  async useSleepDartTo(ana: Ana, target: Hero) {
+    await ana.usesSleepDartTo(this.io, this.redisService, target);
   }
 
-  async useBioticGrenade(io: Namespace, ana: Ana) {
-    await ana.usesBioticGrenade(io, this.redisService);
+  async useBioticGrenade(ana: Ana) {
+    await ana.usesBioticGrenade(this.io, this.redisService);
   }
 
-  async useBioticGrenadeTo(io: Namespace, ana: Ana, target: Hero) {
-    await ana.usesBioticGrenadeTo(io, this.redisService, target);
+  async useBioticGrenadeTo(ana: Ana, target: Hero) {
+    await ana.usesBioticGrenadeTo(this.io, this.redisService, target);
   }
 
-  async useNanoBoost(io: Namespace, ana: Ana, target: Hero) {
-    await ana.usesNanoBoost(io, this.redisService, target);
+  async useNanoBoost(ana: Ana, target: Hero) {
+    await ana.usesNanoBoost(this.io, this.redisService, target);
   }
 
-  async chargeBullets(io: Namespace, ana: Ana) {
-    await ana.chargeBullets(io, this.redisService);
+  async chargeBullets(ana: Ana) {
+    await ana.chargeBullets(this.io, this.redisService);
   }
 }

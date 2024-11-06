@@ -3,6 +3,7 @@ import { Player } from '../../../entities/player.entity';
 import { Team } from '../../../entities/team.entity';
 import { HeroName } from '../../../types/hero-name.type';
 import { Role } from '../../../types/role.type';
+import { Skill } from '../../skill/skill';
 import { Hero } from '../hero';
 
 export class Damage extends Hero {
@@ -19,7 +20,8 @@ export class Damage extends Hero {
     public death: number,
     public matchId: Match['id'],
     public teamId: Team['id'],
-    public playerId: Player['id']
+    public playerId: Player['id'],
+    public skills: { [name: string]: Skill }
   ) {
     super(
       name,
@@ -34,7 +36,8 @@ export class Damage extends Hero {
       death,
       matchId,
       teamId,
-      playerId
+      playerId,
+      skills
     );
   }
 }

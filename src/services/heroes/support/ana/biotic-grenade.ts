@@ -4,18 +4,21 @@ import { RedisService } from '../../../redis.service';
 import { Ana } from './ana';
 import { ModuleInitLog, logger } from '../../../../winston';
 import { resetMatchStatus } from '../../renewMatchStatus';
-import { LethalSkill } from '../../../skill/lethal.skill';
+import { Skill } from '../../../skill/skill';
 
-export class BioticGrenade extends LethalSkill {
+export class BioticGrenade extends Skill {
   constructor(
     public name: string,
+    public category: 'secondary',
+    public type: 'mixed',
+    public isDeployable: false,
     public isActive: boolean,
     public power: number,
     public point: number,
     public duration: number, // 치유 증강/차단 지속시간
     public cooltime: number
   ) {
-    super(name, isActive, cooltime, power, point);
+    super(name, category, type, isDeployable, isActive);
     logger.info(ModuleInitLog, { filename: 'BioticGrenade' });
   }
   async powerUp(
@@ -45,14 +48,15 @@ export class BioticGrenade extends LethalSkill {
     io: Namespace,
     redisService: RedisService,
     player: Ana,
-    target: Hero
+    target: Hero,
+    callback: (io: Namespace, redisService: RedisService) => void
   ) {
     if (target.playerId && player.team === target.team) {
       target.takeHeal(io, redisService, this.power);
       player.ultimate += this.point;
       await resetMatchStatus(io, redisService, target);
     } else if (target.playerId && player.team !== target.team) {
-      target.takeDamage(io, redisService, this.power);
+      target.takeDamage(io, redisService, this.power, callback);
       target.healBan(io, redisService, this.duration);
       player.ultimate += this.point;
       await resetMatchStatus(io, redisService, target);

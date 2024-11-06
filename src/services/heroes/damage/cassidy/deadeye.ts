@@ -3,18 +3,23 @@ import { RedisService } from '../../../redis.service';
 import { Hero } from '../../hero';
 import { resetMatchStatus } from '../../renewMatchStatus';
 import { Cassidy } from './cassidy';
-import { UltimateSkill } from '../../../skill/ultimate.skill';
+import { ModuleInitLog, logger } from '../../../../winston';
+import { Skill } from '../../../skill/skill';
 
-export class Deadeye extends UltimateSkill {
+export class Deadeye extends Skill {
   constructor(
     public name: string,
+    public category: 'ultimate',
+    public type: 'lethal',
+    public isDeployable: false,
     public isActive: boolean,
     public casting: boolean,
     public duration: number,
     public power: number,
     public point: number
   ) {
-    super(name, isActive);
+    super(name, category, type, isDeployable, isActive);
+    logger.info(ModuleInitLog, { filename: 'Deadeye' });
   }
 
   async isUseable(io: Namespace, redisService: RedisService, player: Hero) {
@@ -36,15 +41,16 @@ export class Deadeye extends UltimateSkill {
     io: Namespace,
     redisService: RedisService,
     player: Hero,
-    targets?: Hero[]
+    targets: Hero[],
+    callback: (io: Namespace, redisService: RedisService) => void
   ) {
     if (this.casting && targets) {
       for (const target of targets) {
-        target.takeDamage(io, redisService, this.power);
+        target.takeDamage(io, redisService, this.power, callback);
         await resetMatchStatus(io, redisService, target);
+        player.ultimate += this.point;
+        await resetMatchStatus(io, redisService, player);
       }
-
-      await resetMatchStatus(io, redisService, player);
     }
   }
 }
