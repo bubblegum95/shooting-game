@@ -3,12 +3,15 @@ import { Hero } from '../../hero';
 import { RedisService } from '../../../redis.service';
 import { Ana } from './ana';
 import { ModuleInitLog, logger } from '../../../../winston';
-import { LethalSkill } from '../../../skill/lethal.skill';
 import { resetMatchStatus } from '../../renewMatchStatus';
+import { Skill } from '../../../skill/skill';
 
-export class BioticRifle extends LethalSkill {
+export class BioticRifle extends Skill {
   constructor(
     public name: string,
+    public category: 'primary',
+    public type: 'mixed',
+    public isDeployable: false,
     public isActive: boolean,
     public cooltime: number,
     public power: number, // 치유량 또는 공격량
@@ -16,9 +19,9 @@ export class BioticRifle extends LethalSkill {
     public isScoped: boolean,
     public bullets: number,
     public maxBullets: number,
-    public chargingTime: number // 탄창 충전 시간
+    public charging: number // 탄창 충전 시간
   ) {
-    super(name, isActive, cooltime, power, point);
+    super(name, category, type, isDeployable, isActive);
     logger.info(ModuleInitLog, { filename: 'BioticRifle' });
   }
 
@@ -66,9 +69,10 @@ export class BioticRifle extends LethalSkill {
     io: Namespace,
     redisService: RedisService,
     player: Hero,
-    target: Hero
+    target: Hero,
+    callback: (io: Namespace, redisService: RedisService) => void
   ) {
-    target.takeDamage(io, redisService, this.power);
+    target.takeDamage(io, redisService, this.power, callback);
     await resetMatchStatus(io, redisService, player);
   }
 
@@ -76,12 +80,13 @@ export class BioticRifle extends LethalSkill {
     io: Namespace,
     redisService: RedisService,
     player: Ana,
-    target: Hero
+    target: Hero,
+    callback: (io: Namespace, redisService: RedisService) => void
   ) {
     if (player.team === target.team) {
       this.heal(io, redisService, player, target);
     } else {
-      this.attack(io, redisService, player, target);
+      this.attack(io, redisService, player, target, callback);
     }
   }
 

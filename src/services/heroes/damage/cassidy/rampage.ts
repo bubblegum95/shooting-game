@@ -1,12 +1,12 @@
-import { Hero } from '../../hero';
-import { ModuleInitLog, logger } from '../../../../winston';
 import { Namespace } from 'socket.io';
 import { RedisService } from '../../../redis.service';
-import { Ana } from './ana';
+import { Cassidy } from './cassidy';
+import { Hero } from '../../hero';
 import { resetMatchStatus } from '../../renewMatchStatus';
+import { ModuleInitLog, logger } from '../../../../winston';
 import { Skill } from '../../../skill/skill';
 
-export class SleepDart extends Skill {
+export class Rampage extends Skill {
   constructor(
     public name: string,
     public category: 'secondary',
@@ -14,12 +14,12 @@ export class SleepDart extends Skill {
     public isDeployable: false,
     public isActive: boolean,
     public cooltime: number,
-    public duration: number,
+    public term: number,
     public power: number,
     public point: number
   ) {
     super(name, category, type, isDeployable, isActive);
-    logger.info(ModuleInitLog, { filename: 'SleepDart' });
+    logger.info(ModuleInitLog, { filename: 'Rampage' });
   }
 
   async powerUp(
@@ -32,10 +32,18 @@ export class SleepDart extends Skill {
     super.powerUp(io, redisService, player, increase, duration);
   }
 
-  async use(io: Namespace, redisService: RedisService, player: Ana) {
-    if (this.isActive) {
+  async use(io: Namespace, redisService: RedisService, player: Cassidy) {
+    const bullets = player.skills.peacekeeper.bullets;
+
+    if (this.isActive && bullets > 1) {
       this.isActive = false;
-      await resetMatchStatus(io, redisService, player);
+
+      for (let i = 0; i < bullets; i++) {
+        player.skills.peacekeeper.bullets -= 1;
+        await resetMatchStatus(io, redisService, player);
+
+        setTimeout(() => {}, this.term);
+      }
 
       setTimeout(async () => {
         this.isActive = true;
@@ -47,33 +55,12 @@ export class SleepDart extends Skill {
   async to(
     io: Namespace,
     redisService: RedisService,
-    player: Ana,
+    player: Cassidy,
     target: Hero,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {
-    console.log(`${target.name} is hit by Sleep Dart and falls asleep.`);
-
-    await target.sleep(io, redisService, player, this.duration);
-    await target.takeDamage(io, redisService, this.power, callback);
+    target.takeDamage(io, redisService, this.power, callback);
     player.ultimate += this.point;
+    resetMatchStatus(io, redisService, player);
   }
 }
-
-Hero.prototype.sleep = async function (
-  io: Namespace,
-  redisService: RedisService,
-  player: Hero,
-  duration: number
-) {
-  if (this.isAlive) {
-    this.isAsleep = true;
-    console.log(`${this.name} is now asleep.`);
-    await resetMatchStatus(io, redisService, player);
-
-    setTimeout(async () => {
-      this.isAsleep = false;
-      await resetMatchStatus(io, redisService, player);
-      console.log(`${this.name} woke up.`);
-    }, duration);
-  }
-};

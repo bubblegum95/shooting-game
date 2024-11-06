@@ -52,16 +52,25 @@ export class Ana extends Support {
     );
   }
 
-  async takeDamage(io: Namespace, redisService: RedisService, amount: number) {
-    await super.takeDamage(io, redisService, amount);
-  }
-
-  async takeHeal(io: Namespace, redisService: RedisService, amount: number) {
-    await super.takeHeal(io, redisService, amount);
+  async takeKill(io: Namespace, redisService: RedisService) {
+    super.takeKill(io, redisService);
   }
 
   async die(io: Namespace, redisService: RedisService) {
     await super.die(io, redisService);
+  }
+
+  async takeDamage(
+    io: Namespace,
+    redisService: RedisService,
+    amount: number,
+    callback: (io: Namespace, redisService: RedisService) => void
+  ) {
+    await super.takeDamage(io, redisService, amount, callback);
+  }
+
+  async takeHeal(io: Namespace, redisService: RedisService, amount: number) {
+    await super.takeHeal(io, redisService, amount);
   }
 
   async shot(io: Namespace, redisService: RedisService) {
@@ -70,8 +79,15 @@ export class Ana extends Support {
     }
   }
 
+  // 아군은 힐 적군은 딜
   async heat(io: Namespace, redisService: RedisService, target: Hero) {
-    await this.skills.bioticRifle.heat(io, redisService, this, target);
+    await this.skills.bioticRifle.heat(
+      io,
+      redisService,
+      this,
+      target,
+      this.takeKill
+    );
   }
 
   async useScope(io: Namespace, redisService: RedisService) {
@@ -103,7 +119,13 @@ export class Ana extends Support {
     redisService: RedisService,
     target: Hero
   ) {
-    await this.skills.bioticGrenade.to(io, redisService, this, target);
+    await this.skills.bioticGrenade.to(
+      io,
+      redisService,
+      this,
+      target,
+      this.takeKill
+    );
   }
 
   async usesSleepDart(io: Namespace, redisService: RedisService) {
@@ -117,7 +139,13 @@ export class Ana extends Support {
     redisService: RedisService,
     target: Hero
   ) {
-    await this.skills.sleepDart.to(io, redisService, this, target);
+    await this.skills.sleepDart.to(
+      io,
+      redisService,
+      this,
+      target,
+      this.takeKill
+    );
   }
 
   async chargeNanoBoost(io: Namespace, redisService: RedisService) {

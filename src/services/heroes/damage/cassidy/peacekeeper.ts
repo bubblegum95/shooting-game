@@ -4,23 +4,23 @@ import { Hero } from '../../hero';
 import { RedisService } from '../../../redis.service';
 import { resetMatchStatus } from '../../renewMatchStatus';
 import { ModuleInitLog, logger } from '../../../../winston';
-import { LethalSkill } from '../../../skill/lethal.skill';
+import { Skill } from '../../../skill/skill';
 
-export class Peacekeeper extends LethalSkill {
+export class Peacekeeper extends Skill {
   constructor(
     public name: string,
+    public category: 'primary',
+    public type: 'lethal',
+    public isDeployable: false,
     public isActive: boolean,
     public cooltime: number,
     public bullets: number,
     public maxBullets: number,
     public power: number,
     public point: number,
-    public chargingTime: number,
-    public rampage: boolean,
-    public casting: boolean,
-    public castingDuration: number
+    public chargingTime: number
   ) {
-    super(name, isActive, cooltime, power, point);
+    super(name, category, type, isDeployable, isActive);
     logger.info(ModuleInitLog, { filename: 'Peachkeeper' });
   }
 
@@ -48,6 +48,10 @@ export class Peacekeeper extends LethalSkill {
       this.isActive = false;
       await resetMatchStatus(io, redisService, player);
 
+      if (this.bullets <= 0) {
+        this.chargeBullets(io, redisService, player);
+      }
+
       setTimeout(async () => {
         this.isActive = true;
         await resetMatchStatus(io, redisService, player);
@@ -61,29 +65,12 @@ export class Peacekeeper extends LethalSkill {
     io: Namespace,
     redisService: RedisService,
     player: Cassidy,
-    target: Hero
+    target: Hero,
+    callback: (io: Namespace, redisService: RedisService) => void
   ) {
-    target.takeDamage(io, redisService, this.power);
+    target.takeDamage(io, redisService, this.power, callback);
     await resetMatchStatus(io, redisService, target);
     player.ultimate += this.point;
     await resetMatchStatus(io, redisService, player);
-  }
-
-  async useRampage(
-    // 난사
-    io: Namespace,
-    redisService: RedisService,
-    player: Cassidy
-  ) {
-    if (this.rampage) {
-      this.rampage = false;
-      this.casting = true;
-      for (let i = 0; i < this.bullets; i++) {
-        this.bullets -= 1;
-        await this.resetMatchStatus(io, redisService, player);
-        setTimeout(() => {}, this.castingDuration);
-      }
-      this.casting = false;
-    }
   }
 }
