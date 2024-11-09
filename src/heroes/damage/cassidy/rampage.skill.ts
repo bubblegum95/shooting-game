@@ -2,7 +2,7 @@ import { Namespace } from 'socket.io';
 import { RedisService } from '../../../services/redis.service';
 import { Cassidy } from './cassidy.hero';
 import { Hero } from '../../hero';
-import { updateMatchStatus } from '../../updateMatchStatus';
+import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
 import { ModuleInitLog, logger } from '../../../winston';
 import { Skill } from '../../skill';
 import { Player } from '../../../entities/player.entity';
@@ -26,16 +26,6 @@ export class Rampage extends Skill {
     logger.info(ModuleInitLog, { filename: 'Rampage' });
   }
 
-  async powerUp(
-    io: Namespace,
-    redisService: RedisService,
-    player: Hero,
-    increase: number,
-    duration: number
-  ) {
-    super.powerUp(io, redisService, player, increase, duration);
-  }
-
   async use(io: Namespace, redisService: RedisService, player: Cassidy) {
     const bullets = player.skills.peacekeeper.bullets;
 
@@ -44,14 +34,14 @@ export class Rampage extends Skill {
 
       for (let i = 0; i < bullets; i++) {
         player.skills.peacekeeper.bullets -= 1;
-        await updateMatchStatus(io, redisService, player);
+        await updatePlayerStatus(io, redisService, player);
 
         setTimeout(() => {}, this.term);
       }
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateMatchStatus(io, redisService, player);
+        await updatePlayerStatus(io, redisService, player);
       }, this.cooltime);
     }
   }
@@ -65,6 +55,6 @@ export class Rampage extends Skill {
   ) {
     target.takeDamage(io, redisService, this.power, callback);
     player.ultimate += this.point;
-    updateMatchStatus(io, redisService, player);
+    updatePlayerStatus(io, redisService, player);
   }
 }

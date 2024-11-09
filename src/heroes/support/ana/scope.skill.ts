@@ -2,7 +2,7 @@ import { Namespace } from 'socket.io';
 import { Skill } from '../../skill';
 import { RedisService } from '../../../services/redis.service';
 import { Ana } from './ana.hero';
-import { updateMatchStatus } from '../../updateMatchStatus';
+import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
 
@@ -14,17 +14,18 @@ export class Scope extends Skill {
     public category: 'secondary',
     public type1: 'mixed',
     public type2: 'mounting',
-    public isActive: boolean
+    public isActive: boolean,
+    public isUsing: boolean
   ) {
     super(name, whose, matchId, category, type1, type2, isActive);
   }
 
   async use(io: Namespace, redisService: RedisService, player: Ana) {
-    player.zoomIn(io, redisService);
-  }
-
-  async noUse(io: Namespace, redisService: RedisService, player: Ana) {
-    player.zoomOut(io, redisService);
+    if (!this.isUsing) {
+      player.zoomIn(io, redisService);
+    } else {
+      player.zoomOut(io, redisService);
+    }
   }
 }
 
@@ -32,16 +33,14 @@ Ana.prototype.zoomIn = async function (
   io: Namespace,
   redisService: RedisService
 ) {
-  this.isUsingScope = true;
   this.speed /= 2;
-  await updateMatchStatus(io, redisService, this);
+  await updatePlayerStatus(io, redisService, this);
 };
 
 Ana.prototype.zoomOut = async function (
   io: Namespace,
   redisService: RedisService
 ) {
-  this.isUsingScope = false;
   this.speed *= 2;
-  await updateMatchStatus(io, redisService, this);
+  await updatePlayerStatus(io, redisService, this);
 };

@@ -3,7 +3,7 @@ import { Hero } from '../../hero';
 import { Ana } from './ana.hero';
 import { RedisService } from '../../../services/redis.service';
 import { ModuleInitLog, logger } from '../../../winston';
-import { updateMatchStatus } from '../../updateMatchStatus';
+import { updateSkillStatus } from '../../updateMatchStatus';
 import { Skill } from '../../skill';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
@@ -24,19 +24,10 @@ export class NanoBoost extends Skill {
     logger.info(ModuleInitLog, { filename: 'NanoBoost' });
   }
 
-  async isUseable(io: Namespace, redisService: RedisService, player: Ana) {
-    super.isUseable(io, redisService, player);
-  }
-
-  async useTo(
-    io: Namespace,
-    redisService: RedisService,
-    player: Ana,
-    target: Hero
-  ) {
+  async useTo(io: Namespace, redisService: RedisService, target: Hero) {
     if (this.isActive && target) {
       this.isActive = false;
-      await updateMatchStatus(io, redisService, player);
+      await updateSkillStatus(io, redisService, this);
       target.boostUp(io, redisService, this.duration);
     }
   }
@@ -50,7 +41,7 @@ Hero.prototype.boostUp = function (
   this.isReinforced = true;
   for (const skill of Object.values(this.skills)) {
     if (skill.type === 'lethal' || skill.type === 'mixed') {
-      skill.powerUp(io, redisService, this, this.increase, this.duration);
+      skill.powerUp(io, redisService, this.increase, this.duration);
     }
   }
 
@@ -58,22 +49,4 @@ Hero.prototype.boostUp = function (
     this.isReinforced = false;
     delete this.isReinforced;
   }, duration);
-};
-
-Skill.prototype.powerUp = async function (
-  io: Namespace,
-  redisService: RedisService,
-  target: Hero,
-  increase: number,
-  duration: number
-) {
-  if (target.isReinforced) {
-    this.power *= increase;
-    await updateMatchStatus(io, redisService, target);
-
-    setTimeout(async () => {
-      this.power /= increase;
-      await updateMatchStatus(io, redisService, target);
-    }, duration);
-  }
 };

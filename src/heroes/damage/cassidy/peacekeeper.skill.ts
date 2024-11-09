@@ -1,12 +1,11 @@
 import { Namespace } from 'socket.io';
-import { Cassidy } from './cassidy.hero';
 import { Hero } from '../../hero';
 import { RedisService } from '../../../services/redis.service';
-import { updateMatchStatus } from '../../updateMatchStatus';
 import { ModuleInitLog, logger } from '../../../winston';
 import { Skill } from '../../skill';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
+import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
 
 export class Peacekeeper extends Skill {
   constructor(
@@ -28,55 +27,37 @@ export class Peacekeeper extends Skill {
     logger.info(ModuleInitLog, { filename: 'Peacekeeper' });
   }
 
-  async powerUp(
-    io: Namespace,
-    redisService: RedisService,
-    player: Hero,
-    increase: number,
-    duration: number
-  ) {
-    super.powerUp(io, redisService, player, increase, duration);
-  }
-
-  async chargeBullets(
-    io: Namespace,
-    redisService: RedisService,
-    player: Cassidy
-  ) {
-    super.chargeBullets(io, redisService, player);
-  }
-
-  async shot(io: Namespace, redisService: RedisService, player: Cassidy) {
+  async shot(io: Namespace, redisService: RedisService) {
     if (this.isActive && this.bullets > 0) {
       this.bullets -= 1;
       this.isActive = false;
-      await updateMatchStatus(io, redisService, player);
+      await updateSkillStatus(io, redisService, this);
 
       if (this.bullets <= 0) {
-        this.chargeBullets(io, redisService, player);
+        this.chargeBullets(io, redisService);
       }
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateMatchStatus(io, redisService, player);
+        await updateSkillStatus(io, redisService, this);
       }, this.cooltime);
     } else if (this.bullets <= 0) {
-      this.chargeBullets(io, redisService, player);
+      this.chargeBullets(io, redisService);
     }
   }
 
   async heat(
     io: Namespace,
     redisService: RedisService,
-    player: Cassidy,
+    player: Hero,
     target: Hero | Skill,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {
     if (target instanceof Hero) {
       target.takeDamage(io, redisService, this.power, callback);
-      await updateMatchStatus(io, redisService, target);
+      await updatePlayerStatus(io, redisService, target);
       player.ultimate += this.point;
-      await updateMatchStatus(io, redisService, player);
+      await updatePlayerStatus(io, redisService, player);
     } else if (target instanceof Skill) {
       target.takeDamage(io, redisService, this.power);
     }

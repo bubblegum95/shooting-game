@@ -3,7 +3,7 @@ import { ModuleInitLog, logger } from '../../../winston';
 import { Namespace } from 'socket.io';
 import { RedisService } from '../../../services/redis.service';
 import { Ana } from './ana.hero';
-import { updateMatchStatus } from '../../updateMatchStatus';
+import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
 import { Skill } from '../../skill';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
@@ -26,24 +26,14 @@ export class SleepDart extends Skill {
     logger.info(ModuleInitLog, { filename: 'SleepDart' });
   }
 
-  async powerUp(
-    io: Namespace,
-    redisService: RedisService,
-    player: Hero,
-    increase: number,
-    duration: number
-  ) {
-    super.powerUp(io, redisService, player, increase, duration);
-  }
-
   async use(io: Namespace, redisService: RedisService, player: Ana) {
     if (this.isActive) {
       this.isActive = false;
-      await updateMatchStatus(io, redisService, player);
+      await updateSkillStatus(io, redisService, this);
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateMatchStatus(io, redisService, player);
+        await updateSkillStatus(io, redisService, this);
       }, this.cooltime);
     }
   }
@@ -72,11 +62,11 @@ Hero.prototype.sleep = async function (
   if (this.isAlive) {
     this.isAsleep = true;
     console.log(`${this.name} is now asleep.`);
-    await updateMatchStatus(io, redisService, player);
+    await updatePlayerStatus(io, redisService, this);
 
     setTimeout(async () => {
       this.isAsleep = false;
-      await updateMatchStatus(io, redisService, player);
+      await updatePlayerStatus(io, redisService, player);
       console.log(`${this.name} woke up.`);
     }, duration);
   }

@@ -4,16 +4,22 @@ import { Hero } from './hero';
 import { Match } from '../entities/match.entity';
 import { Skill } from './skill';
 
-export const updateMatchStatus = async function (
+export const updatePlayerStatus = async function (
   io: Namespace,
   redisService: RedisService,
-  player: Hero | Skill
+  player: Hero
 ) {
-  if (player instanceof Hero) {
-    await redisService.setPlayerProperties(player.playerId, player);
-  } else if (player instanceof Skill) {
-  }
+  await redisService.setPlayerProperties(player.playerId, player);
   await matchStatus(io, redisService, player.matchId);
+};
+
+export const updateSkillStatus = async function (
+  io: Namespace,
+  redisService: RedisService,
+  skill: Skill
+) {
+  await redisService.setSkillProperties(skill.whose, skill);
+  await matchStatus(io, redisService, skill.matchId);
 };
 
 export const matchStatus = async function (

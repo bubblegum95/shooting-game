@@ -1,8 +1,8 @@
-import { Cassidy } from '../../heroes/damage/cassidy/cassidy.hero';
-import { Deadeye } from '../../heroes/damage/cassidy/deadeye.skill';
-import { Flashbang } from '../../heroes/damage/cassidy/flashbang.skill';
-import { Peacekeeper } from '../../heroes/damage/cassidy/peacekeeper.skill';
-import { Rampage } from '../../heroes/damage/cassidy/rampage.skill';
+import { Cassidy } from '../../../heroes/damage/cassidy/cassidy.hero';
+import { Deadeye } from '../../../heroes/damage/cassidy/deadeye.skill';
+import { Flashbang } from '../../../heroes/damage/cassidy/flashbang.skill';
+import { Peacekeeper } from '../../../heroes/damage/cassidy/peacekeeper.skill';
+import { Rampage } from '../../../heroes/damage/cassidy/rampage.skill';
 
 export const cassidy = function (
   matchId: string,

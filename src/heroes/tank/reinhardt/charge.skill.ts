@@ -3,7 +3,7 @@ import { logger, ModuleInitLog } from '../../../winston';
 import { Skill } from '../../skill';
 import { RedisService } from '../../../services/redis.service';
 import { Reinhardt } from './reinhardt.hero';
-import { updateMatchStatus } from '../../updateMatchStatus';
+import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
 import { Hero } from '../../hero';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
@@ -38,11 +38,11 @@ export class Charge extends Skill {
         }
       }
 
-      await updateMatchStatus(io, redisService, player);
+      await updatePlayerStatus(io, redisService, player);
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateMatchStatus(io, redisService, player);
+        await updateSkillStatus(io, redisService, this);
       }, this.cootime);
     } else if (this.isUsing) {
       this.isUsing = false;
@@ -52,7 +52,7 @@ export class Charge extends Skill {
           skill.isActive = true;
         }
       }
-      await updateMatchStatus(io, redisService, player);
+      await updatePlayerStatus(io, redisService, player);
     }
   }
 
@@ -68,12 +68,10 @@ export class Charge extends Skill {
   async crash(
     io: Namespace,
     redisService: RedisService,
-    player: Reinhardt,
     target: Hero,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {
     await target.takeDamage(io, redisService, this.power, callback);
-    await updateMatchStatus(io, redisService, player);
   }
 }
 
@@ -88,7 +86,7 @@ Hero.prototype.isOverwhelmed = async function (
         skill.isActive = false;
       }
     }
-    await updateMatchStatus(io, redisService, this);
+    await updatePlayerStatus(io, redisService, this);
   } else {
     this.isOverpowered = false;
     for (const skill of Object.values(this.skills)) {
@@ -96,6 +94,6 @@ Hero.prototype.isOverwhelmed = async function (
         skill.isActive = true;
       }
     }
-    await updateMatchStatus(io, redisService, this);
+    await updatePlayerStatus(io, redisService, this);
   }
 };

@@ -55,7 +55,7 @@ export class Reinhardt extends Hero {
   }
 
   async useRocketHammer(io: Namespace, redisService: RedisService) {
-    await this.skills.rocketHammer.use(io, redisService, this);
+    await this.skills.rocketHammer.use(io, redisService);
   }
 
   async useRocketHammerTo(
@@ -106,14 +106,14 @@ export class Reinhardt extends Hero {
     await this.skills.charge.crash(
       io,
       redisService,
-      this,
+
       target,
       this.takeKill
     );
   }
 
   async useEarthshatter(io: Namespace, redisService: RedisService) {
-    await this.skills.earthshatter.use(io, redisService, this);
+    await this.skills.earthshatter.use(io, redisService);
   }
 
   async useEarthshatterTo(
@@ -121,6 +121,6 @@ export class Reinhardt extends Hero {
     redisService: RedisService,
     target: Hero
   ) {
-    this.skills.earthshatter.to(io, redisService, this, this.takeKill);
+    this.skills.earthshatter.to(io, redisService, target, this.takeKill);
   }
 }

@@ -2,7 +2,7 @@ import { Namespace } from 'socket.io';
 import { Skill } from '../../skill';
 import { Reinhardt } from './reinhardt.hero';
 import { RedisService } from '../../../services/redis.service';
-import { updateMatchStatus } from '../../updateMatchStatus';
+import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
 import { Hero } from '../../hero';
 import { logger, ModuleInitLog } from '../../../winston';
 import { Player } from '../../../entities/player.entity';
@@ -27,14 +27,14 @@ export class RocketHammer extends Skill {
     logger.info(ModuleInitLog, { filename: 'RocketHammer' });
   }
 
-  async use(io: Namespace, redisService: RedisService, player: Reinhardt) {
+  async use(io: Namespace, redisService: RedisService) {
     if (this.isActive) {
       this.isActive = false;
-      await updateMatchStatus(io, redisService, player);
+      await updateSkillStatus(io, redisService, this);
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateMatchStatus(io, redisService, player);
+        await updateSkillStatus(io, redisService, this);
       }, this.cooltime);
     }
   }
@@ -48,6 +48,6 @@ export class RocketHammer extends Skill {
   ) {
     await target.takeDamage(io, redisService, this.power, callback);
     player.ultimate += this.point;
-    await updateMatchStatus(io, redisService, player);
+    await updatePlayerStatus(io, redisService, player);
   }
 }

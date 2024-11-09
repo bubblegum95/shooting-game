@@ -3,7 +3,7 @@ import { Match } from '../entities/match.entity';
 import { RedisService } from '../services/redis.service';
 import { Player } from '../entities/player.entity';
 import { Team } from '../entities/team.entity';
-import { updateMatchStatus } from './updateMatchStatus';
+import { updatePlayerStatus } from './updateMatchStatus';
 import { Skill } from './skill';
 
 export class Hero {
@@ -31,13 +31,13 @@ export class Hero {
     try {
       if (this.isAlive) {
         this.isAlive = false;
-        await updateMatchStatus(io, redisService, this);
+        await updatePlayerStatus(io, redisService, this);
 
         setTimeout(async () => {
           this.health = this.maxHealth;
           this.isAlive = true;
           this.death += 1;
-          await updateMatchStatus(io, redisService, this);
+          await updatePlayerStatus(io, redisService, this);
         }, 5 * 1000);
       }
     } catch (error) {
@@ -47,7 +47,7 @@ export class Hero {
 
   async takeKill(io: Namespace, redisService: RedisService) {
     this.kill += 1;
-    await updateMatchStatus(io, redisService, this);
+    await updatePlayerStatus(io, redisService, this);
   }
 
   async takeDamage(
@@ -58,12 +58,12 @@ export class Hero {
   ) {
     if (this.isAlive) {
       this.health -= power;
-      await updateMatchStatus(io, redisService, this);
+      await updatePlayerStatus(io, redisService, this);
 
       if (this.health <= 0) {
         this.health = 0;
         await this.die(io, redisService);
-        await updateMatchStatus(io, redisService, this);
+        await updatePlayerStatus(io, redisService, this);
         callback(io, redisService);
       }
     }
@@ -72,11 +72,11 @@ export class Hero {
   async takeHeal(io: Namespace, redisService: RedisService, power: number) {
     if (this.isAlive && !this.isHealBan) {
       this.health += power;
-      await updateMatchStatus(io, redisService, this);
+      await updatePlayerStatus(io, redisService, this);
 
       if (this.health >= this.maxHealth) {
         this.health = this.maxHealth;
-        await updateMatchStatus(io, redisService, this);
+        await updatePlayerStatus(io, redisService, this);
       }
     }
   }
@@ -85,14 +85,14 @@ export class Hero {
     if (this.isAlive) {
       if (this.role === 'Tank') {
         this.knockback = distance / 2;
-        await updateMatchStatus(io, redisService, this);
+        await updatePlayerStatus(io, redisService, this);
       } else {
         this.knockback = distance;
-        await updateMatchStatus(io, redisService, this);
+        await updatePlayerStatus(io, redisService, this);
       }
 
       delete this.knockback;
-      await updateMatchStatus(io, redisService, this);
+      await updatePlayerStatus(io, redisService, this);
     }
   }
 
@@ -103,12 +103,12 @@ export class Hero {
   ) {
     for (const skill of Object.values(this.skills)) {
       if (skill.isActive) {
-        skill.isActive = false;
-        await updateMatchStatus(io, redisService, this);
+        skill.isNotUseable(io, redisService);
+        await updatePlayerStatus(io, redisService, this);
 
         setTimeout(async () => {
-          skill.isActive = true;
-          await updateMatchStatus(io, redisService, this);
+          skill.isUseable(io, redisService);
+          await updatePlayerStatus(io, redisService, this);
         }, duration);
       }
     }

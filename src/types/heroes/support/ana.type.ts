@@ -31,7 +31,8 @@ export const ana = function (
     'secondary',
     'mixed',
     'mounting',
-    true
+    true,
+    false
   );
 
   const sleepDart = new SleepDart(

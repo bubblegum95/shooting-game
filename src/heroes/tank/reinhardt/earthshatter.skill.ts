@@ -3,7 +3,7 @@ import { Skill } from '../../skill';
 import { RedisService } from '../../../services/redis.service';
 import { Reinhardt } from './reinhardt.hero';
 import { Hero } from '../../hero';
-import { updateMatchStatus } from '../../updateMatchStatus';
+import { updateSkillStatus } from '../../updateMatchStatus';
 import { logger, ModuleInitLog } from '../../../winston';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
@@ -24,14 +24,10 @@ export class Earthshatter extends Skill {
     logger.info(ModuleInitLog, { filename: 'Earthshatter' });
   }
 
-  async isUsable(io: Namespace, redisService: RedisService, player: Reinhardt) {
-    super.isUseable(io, redisService, player);
-  }
-
-  async use(io: Namespace, redisService: RedisService, player: Reinhardt) {
+  async use(io: Namespace, redisService: RedisService) {
     if (this.isActive) {
       this.isActive = false;
-      await updateMatchStatus(io, redisService, player);
+      await updateSkillStatus(io, redisService, this);
     }
   }
 

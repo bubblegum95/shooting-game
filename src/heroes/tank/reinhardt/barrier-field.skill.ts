@@ -2,7 +2,7 @@ import { Namespace } from 'socket.io';
 import { Skill } from '../../skill';
 import { RedisService } from '../../../services/redis.service';
 import { Reinhardt } from './reinhardt.hero';
-import { updateMatchStatus } from '../../updateMatchStatus';
+import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
 import { logger, ModuleInitLog } from '../../../winston';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
@@ -42,12 +42,12 @@ export class BarrierField extends Skill {
     if (this.durability <= 0) {
       this.durability = 0;
       this.isActive = false;
-      await updateMatchStatus(io, redisService, this);
+      await updateSkillStatus(io, redisService, this);
 
       setTimeout(async () => {
         this.durability = this.maxDurability;
         this.isActive = true;
-        await updateMatchStatus(io, redisService, this);
+        await updateSkillStatus(io, redisService, this);
       }, this.cooltime);
     }
   }
@@ -62,7 +62,7 @@ Reinhardt.prototype.useBarrierField = async function (
   for (const skill of Object.values(this.skills))
     if (!(skill instanceof BarrierField)) {
       skill.isActive = false;
-      await updateMatchStatus(io, redisService, this);
+      await updateSkillStatus(io, redisService, skill);
     }
 };
 
@@ -75,6 +75,6 @@ Reinhardt.prototype.noUseBarrierField = async function (
   for (const skill of Object.values(this.skills))
     if (!(skill instanceof BarrierField)) {
       skill.isActive = true;
-      await updateMatchStatus(io, redisService, this);
+      await updateSkillStatus(io, redisService, skill);
     }
 };

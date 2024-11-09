@@ -53,7 +53,7 @@ export class Ana extends Hero {
 
   async shot(io: Namespace, redisService: RedisService) {
     if (this.isAlive) {
-      await this.skills.bioticRifle.shot(io, redisService, this);
+      await this.skills.bioticRifle.shot(io, redisService);
     }
   }
 
@@ -82,7 +82,7 @@ export class Ana extends Hero {
 
   async chargeBullets(io: Namespace, redisService: RedisService) {
     if (this.isAlive) {
-      await this.skills.bioticRifle.chargeBullets(io, redisService, this);
+      await this.skills.bioticRifle.chargeBullets(io, redisService);
     }
   }
 
@@ -128,13 +128,13 @@ export class Ana extends Hero {
 
   async chargeNanoBoost(io: Namespace, redisService: RedisService) {
     if (this.ultimate >= this.maxUltimate) {
-      await this.skills.nanoBoost.isUseable(io, redisService, this);
+      await this.skills.nanoBoost.isUseable(io, redisService);
     }
   }
 
   async usesNanoBoost(io: Namespace, redisService: RedisService, target: Hero) {
     if (this.isAlive && !this.isShocked) {
-      await this.skills.nanoBoost.useTo(io, redisService, this, target);
+      await this.skills.nanoBoost.useTo(io, redisService, target);
     }
   }
 }
