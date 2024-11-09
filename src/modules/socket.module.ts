@@ -5,7 +5,9 @@ import { GameGateway } from '../gateways/game.gateway';
 import { ModuleInitLog, logger } from '../winston';
 import { RedisService } from '../services/redis.service';
 import { GameService } from '../services/game.service';
-import { AnaGateWay } from '../gateways/heroes/support/ana.gateway';
+import { AnaGateway } from '../gateways/heroes/support/ana.gateway';
+import { CassidyGateway } from '../gateways/heroes/damage/cassidy.gateway';
+import { ReinhardtGateway } from '../gateways/heroes/tank/reinhardt.gateway';
 
 export class SocketModule {
   private io: Server | undefined;
@@ -25,12 +27,18 @@ export class SocketModule {
       },
     });
 
+    // ============= game ==================
     const game = new GameGateway(
       this.io.of('/game'),
       this.redisService,
       this.gameService
     );
-    const ana = new AnaGateWay(this.io.of('/game'), this.redisService);
+    const ana = new AnaGateway(this.io.of('/game'), this.redisService);
+    const cassidy = new CassidyGateway(this.io.of('/game'), this.redisService);
+    const reinhardt = new ReinhardtGateway(
+      this.io.of('/game'),
+      this.redisService
+    );
 
     // ============== chat ==================
     const chat = new ChatGateway(this.io.of('/chat'));

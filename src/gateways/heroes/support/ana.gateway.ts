@@ -1,10 +1,10 @@
 import { Namespace } from 'socket.io';
 import { RedisService } from '../../../services/redis.service';
 import { ModuleInitLog, logger } from '../../../winston';
-import { Hero } from '../../../services/heroes/hero';
-import { Ana } from '../../../services/heroes/support/ana/ana';
+import { Hero } from '../../../heroes/hero';
+import { Ana } from '../../../heroes/support/ana/ana.hero';
 
-export class AnaGateWay {
+export class AnaGateway {
   constructor(private io: Namespace, private redisService: RedisService) {
     this.init();
     logger.info(ModuleInitLog, { filename: 'AnaGateway' });

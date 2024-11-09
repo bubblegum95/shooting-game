@@ -1,8 +1,9 @@
 import { Namespace } from 'socket.io';
 import { RedisService } from '../../../services/redis.service';
-import { Cassidy } from '../../../services/heroes/damage/cassidy/cassidy';
-import { Hero } from '../../../services/heroes/hero';
+import { Cassidy } from '../../../heroes/damage/cassidy/cassidy.hero';
+import { Hero } from '../../../heroes/hero';
 import { ModuleInitLog, logger } from '../../../winston';
+import { Skill } from '../../../heroes/skill';
 
 export class CassidyGateway {
   constructor(
@@ -23,8 +24,12 @@ export class CassidyGateway {
         await this.usePeacekeeper(cassidy);
       });
 
-      socket.on('cassidy:peacekeeper:shot', async ({ cassidy, target }) => {
+      socket.on('cassidy:peacekeeper:to', async ({ cassidy, target }) => {
         await this.usePeacekeeperTo(cassidy, target);
+      });
+
+      socket.on('cassidy:peacekeeper:chargeBullets', async ({ cassidy }) => {
+        await this.chargeBullets(cassidy);
       });
 
       socket.on('cassidy:rampage:use', async ({ cassidy }) => {
@@ -61,7 +66,7 @@ export class CassidyGateway {
     await cassidy.shot(this.io, this.redisService);
   }
 
-  async usePeacekeeperTo(cassidy: Cassidy, target: Hero) {
+  async usePeacekeeperTo(cassidy: Cassidy, target: Hero | Skill) {
     await cassidy.heat(this.io, this.redisService, target);
   }
 
