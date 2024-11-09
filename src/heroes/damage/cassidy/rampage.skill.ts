@@ -7,12 +7,14 @@ import { ModuleInitLog, logger } from '../../../winston';
 import { Skill } from '../../skill';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
+import { Team } from '../../../entities/team.entity';
 
 export class Rampage extends Skill {
   constructor(
-    public name: string,
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
+    public name: string,
     public category: 'secondary',
     public type1: 'lethal',
     public type2: 'mounting',
@@ -22,18 +24,8 @@ export class Rampage extends Skill {
     public power: number,
     public point: number
   ) {
-    super(name, whose, matchId, category, type1, type2, isActive);
+    super(name, teamId, whose, matchId, category, type1, type2, isActive);
     logger.info(ModuleInitLog, { filename: 'Rampage' });
-  }
-
-  async powerUp(
-    io: Namespace,
-    redisService: RedisService,
-    player: Hero,
-    increase: number,
-    duration: number
-  ) {
-    super.powerUp(io, redisService, player, increase, duration);
   }
 
   async use(io: Namespace, redisService: RedisService, player: Cassidy) {
@@ -60,9 +52,11 @@ export class Rampage extends Skill {
     io: Namespace,
     redisService: RedisService,
     player: Cassidy,
-    target: Hero,
+    target: Hero | Skill,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {
+    if (target instanceof Hero) {
+    }
     target.takeDamage(io, redisService, this.power, callback);
     player.ultimate += this.point;
     updateMatchStatus(io, redisService, player);

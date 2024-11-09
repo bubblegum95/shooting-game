@@ -7,12 +7,14 @@ import { updateMatchStatus } from '../../updateMatchStatus';
 import { Hero } from '../../hero';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
+import { Team } from '../../../entities/team.entity';
 
 export class Charge extends Skill {
   constructor(
-    public name: 'charge',
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
+    public name: 'charge',
     public category: 'secondary',
     public type1: 'lethal',
     public type2: 'mobility',
@@ -23,7 +25,7 @@ export class Charge extends Skill {
     public point: number,
     public distance: number
   ) {
-    super(name, whose, matchId, category, type1, type2, isActive);
+    super(name, teamId, whose, matchId, category, type1, type2, isActive);
     logger.info(ModuleInitLog, { filename: 'Charge' });
   }
 
@@ -42,7 +44,7 @@ export class Charge extends Skill {
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateMatchStatus(io, redisService, player);
+        await updateMatchStatus(io, redisService, this);
       }, this.cootime);
     } else if (this.isUsing) {
       this.isUsing = false;
@@ -68,12 +70,10 @@ export class Charge extends Skill {
   async crash(
     io: Namespace,
     redisService: RedisService,
-    player: Reinhardt,
     target: Hero,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {
     await target.takeDamage(io, redisService, this.power, callback);
-    await updateMatchStatus(io, redisService, player);
   }
 }
 

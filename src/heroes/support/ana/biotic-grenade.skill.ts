@@ -7,12 +7,14 @@ import { updateMatchStatus } from '../../updateMatchStatus';
 import { Skill } from '../../skill';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
+import { Team } from '../../../entities/team.entity';
 
 export class BioticGrenade extends Skill {
   constructor(
-    public name: string,
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
+    public name: string,
     public category: 'secondary',
     public type1: 'mixed',
     public type2: 'throwing',
@@ -22,28 +24,19 @@ export class BioticGrenade extends Skill {
     public duration: number, // 치유 증강/차단 지속시간
     public cooltime: number
   ) {
-    super(name, whose, matchId, category, type1, type2, isActive);
+    super(name, whose, teamId, matchId, category, type1, type2, isActive);
     logger.info(ModuleInitLog, { filename: 'BioticGrenade' });
-  }
-  async powerUp(
-    io: Namespace,
-    redisService: RedisService,
-    player: Hero,
-    increase: number,
-    duration: number
-  ) {
-    super.powerUp(io, redisService, player, increase, duration);
   }
 
   async use(io: Namespace, redisService: RedisService, player: Ana) {
     // return 값은 io 에 보낼 결과값, socket으로 보낼 값은 쿨타임 남은 시간?
     if (this.isActive) {
       this.isActive = false;
-      await updateMatchStatus(io, redisService, player);
+      await updateMatchStatus(io, redisService, this);
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateMatchStatus(io, redisService, player);
+        await updateMatchStatus(io, redisService, this);
       }, this.cooltime);
     }
   }
@@ -52,18 +45,20 @@ export class BioticGrenade extends Skill {
     io: Namespace,
     redisService: RedisService,
     player: Ana,
-    target: Hero,
+    target: Hero | Skill,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {
-    if (target.playerId && player.team === target.team) {
+    if (player.team === target.team && target instanceof Hero) {
       target.takeHeal(io, redisService, this.power);
       player.ultimate += this.point;
-      await updateMatchStatus(io, redisService, target);
-    } else if (target.playerId && player.team !== target.team) {
+      await updateMatchStatus(io, redisService, player);
+    } else if (player.team !== target.team && target instanceof Hero) {
       target.takeDamage(io, redisService, this.power, callback);
       target.healBan(io, redisService, this.duration);
       player.ultimate += this.point;
-      await updateMatchStatus(io, redisService, target);
+      await updateMatchStatus(io, redisService, player);
+    } else if (player.team !== target.team && target instanceof Skill) {
+      target.takeDamage(io, redisService, this.power);
     }
   }
 }

@@ -54,11 +54,11 @@ export class Cassidy extends Hero {
   }
 
   async chargeBullets(io: Namespace, redisService: RedisService) {
-    await this.skills.peacekeeper.chargeBullets(io, redisService, this);
+    await this.skills.peacekeeper.chargeBullets(io, redisService);
   }
 
   async shot(io: Namespace, redisService: RedisService) {
-    await this.skills.peacekeeper.shot(io, redisService, this);
+    await this.skills.peacekeeper.shot(io, redisService);
   }
 
   async heat(io: Namespace, redisService: RedisService, target: Hero | Skill) {
@@ -77,7 +77,11 @@ export class Cassidy extends Hero {
     }
   }
 
-  async useRampageTo(io: Namespace, redisService: RedisService, target: Hero) {
+  async useRampageTo(
+    io: Namespace,
+    redisService: RedisService,
+    target: Hero | Skill
+  ) {
     if (this.isAlive && !this.isShocked) {
       await this.skills.rampage.to(
         io,
@@ -90,25 +94,19 @@ export class Cassidy extends Hero {
   }
 
   async useFlashbang(io: Namespace, redisService: RedisService) {
-    await this.skills.flashbang.use(io, redisService, this);
+    await this.skills.flashbang.use(io, redisService);
   }
 
   async useFlashbangTo(
     io: Namespace,
     redisService: RedisService,
-    target: Hero
+    target: Hero | Skill
   ) {
-    await this.skills.flashbang.to(
-      io,
-      redisService,
-      this,
-      target,
-      this.takeKill
-    );
+    await this.skills.flashbang.to(io, redisService, target, this.takeKill);
   }
 
   async useDeadeye(io: Namespace, redisService: RedisService) {
-    await this.skills.deadeye.use(io, redisService, this);
+    await this.skills.deadeye.use(io, redisService);
   }
 
   async useDeadeyeTo(
@@ -116,12 +114,6 @@ export class Cassidy extends Hero {
     redisService: RedisService,
     targets: Hero[]
   ) {
-    await this.skills.deadeye.to(
-      io,
-      redisService,
-      this,
-      targets,
-      this.takeKill
-    );
+    await this.skills.deadeye.to(io, redisService, targets, this.takeKill);
   }
 }

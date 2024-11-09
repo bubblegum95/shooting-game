@@ -3,6 +3,7 @@ import { RedisService } from '../services/redis.service';
 import { Hero } from './hero';
 import { Match } from '../entities/match.entity';
 import { Skill } from './skill';
+import { Ana } from './support/ana/ana.hero';
 
 export const updateMatchStatus = async function (
   io: Namespace,
@@ -11,7 +12,8 @@ export const updateMatchStatus = async function (
 ) {
   if (player instanceof Hero) {
     await redisService.setPlayerProperties(player.playerId, player);
-  } else if (player instanceof Skill) {
+  } else {
+    await matchStatus(io, redisService, player.matchId);
   }
   await matchStatus(io, redisService, player.matchId);
 };

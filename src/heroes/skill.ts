@@ -1,15 +1,16 @@
 import { Namespace } from 'socket.io';
 import { updateMatchStatus } from './updateMatchStatus';
 import { RedisService } from '../services/redis.service';
-import { Hero } from './hero';
 import { Player } from '../entities/player.entity';
 import { Match } from '../entities/match.entity';
+import { Team } from '../entities/team.entity';
 
 export class Skill {
   [key: string]: any;
 
   constructor(
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
     public name: string,
     public category: 'primary' | 'secondary' | 'ultimate',
@@ -18,10 +19,24 @@ export class Skill {
     public isActive: boolean
   ) {}
 
-  async isUseable(io: Namespace, redisService: RedisService, player: Hero) {
+  async chargeBullets(io: Namespace, redisService: RedisService) {
+    if (this.category === 'primary' && this.bullets) {
+      this.bullets = this.maxBullets;
+      await updateMatchStatus(io, redisService, this);
+    }
+  }
+
+  async isNotUsable(io: Namespace, redisService: RedisService) {
+    if (this.isActive) {
+      this.isActive = false;
+      await updateMatchStatus(io, redisService, this);
+    }
+  }
+
+  async isUsable(io: Namespace, redisService: RedisService) {
     if (!this.isActive) {
-      this.isActive;
-      await updateMatchStatus(io, redisService, player);
+      this.isActive = true;
+      await updateMatchStatus(io, redisService, this);
     }
   }
 
@@ -30,6 +45,21 @@ export class Skill {
       this.durability -= damage;
       await updateMatchStatus(io, redisService, this);
     }
+  }
+
+  async powerUp(
+    io: Namespace,
+    redisService: RedisService,
+    duration: number,
+    increase: number
+  ) {
+    this.power *= increase;
+    await updateMatchStatus(io, redisService, this);
+
+    setTimeout(async () => {
+      this.power /= increase;
+      await updateMatchStatus(io, redisService, this);
+    }, duration);
   }
 }
 // js에서는 다중 상속 개념이 없음.. "믹스인" 이라는 개념이 있으나 프로토타입에 메서드 할당까지만 가능.

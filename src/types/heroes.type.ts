@@ -3,7 +3,7 @@ import { Player } from '../entities/player.entity';
 import { Team } from '../entities/team.entity';
 import { cassidy } from './heroes/damage/cassidy.type';
 import { ana } from './heroes/support/ana.type';
-import { reinhardt } from './heroes/tank/reinhardt';
+import { reinhardt } from './heroes/tank/reinhardt.type';
 
 export const Heroes = function (
   type: string,

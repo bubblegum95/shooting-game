@@ -103,11 +103,11 @@ export class Hero {
   ) {
     for (const skill of Object.values(this.skills)) {
       if (skill.isActive) {
-        skill.isActive = false;
+        skill.isNotUseable(io, redisService);
         await updateMatchStatus(io, redisService, this);
 
         setTimeout(async () => {
-          skill.isActive = true;
+          skill.isUseable(io, redisService);
           await updateMatchStatus(io, redisService, this);
         }, duration);
       }

@@ -1,17 +1,18 @@
 import { Namespace } from 'socket.io';
-import { Cassidy } from './cassidy.hero';
 import { Hero } from '../../hero';
 import { RedisService } from '../../../services/redis.service';
-import { updateMatchStatus } from '../../updateMatchStatus';
 import { ModuleInitLog, logger } from '../../../winston';
 import { Skill } from '../../skill';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
+import { updateMatchStatus } from '../../updateMatchStatus';
+import { Team } from '../../../entities/team.entity';
 
 export class Peacekeeper extends Skill {
   constructor(
     public name: string,
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
     public category: 'primary',
     public type1: 'lethal',
@@ -24,51 +25,33 @@ export class Peacekeeper extends Skill {
     public point: number,
     public chargingTime: number
   ) {
-    super(name, whose, matchId, category, type1, type2, isActive);
+    super(name, whose, teamId, matchId, category, type1, type2, isActive);
     logger.info(ModuleInitLog, { filename: 'Peacekeeper' });
   }
 
-  async powerUp(
-    io: Namespace,
-    redisService: RedisService,
-    player: Hero,
-    increase: number,
-    duration: number
-  ) {
-    super.powerUp(io, redisService, player, increase, duration);
-  }
-
-  async chargeBullets(
-    io: Namespace,
-    redisService: RedisService,
-    player: Cassidy
-  ) {
-    super.chargeBullets(io, redisService, player);
-  }
-
-  async shot(io: Namespace, redisService: RedisService, player: Cassidy) {
+  async shot(io: Namespace, redisService: RedisService) {
     if (this.isActive && this.bullets > 0) {
       this.bullets -= 1;
       this.isActive = false;
-      await updateMatchStatus(io, redisService, player);
+      await updateMatchStatus(io, redisService, this);
 
       if (this.bullets <= 0) {
-        this.chargeBullets(io, redisService, player);
+        this.chargeBullets(io, redisService);
       }
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateMatchStatus(io, redisService, player);
+        await updateMatchStatus(io, redisService, this);
       }, this.cooltime);
     } else if (this.bullets <= 0) {
-      this.chargeBullets(io, redisService, player);
+      this.chargeBullets(io, redisService);
     }
   }
 
   async heat(
     io: Namespace,
     redisService: RedisService,
-    player: Cassidy,
+    player: Hero,
     target: Hero | Skill,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {

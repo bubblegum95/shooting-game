@@ -10,6 +10,7 @@ import { FireStrike } from './fire-strike.skill';
 import { BarrierField } from './barrier-field.skill';
 import { Charge } from './charge.skill';
 import { Earthshatter } from './earthshatter.skill';
+import { Skill } from '../../skill';
 
 export class Reinhardt extends Hero {
   constructor(
@@ -55,13 +56,13 @@ export class Reinhardt extends Hero {
   }
 
   async useRocketHammer(io: Namespace, redisService: RedisService) {
-    await this.skills.rocketHammer.use(io, redisService, this);
+    await this.skills.rocketHammer.use(io, redisService);
   }
 
   async useRocketHammerTo(
     io: Namespace,
     redisService: RedisService,
-    target: Hero
+    target: Hero | Skill
   ) {
     await this.skills.rocketHammer.to(
       io,
@@ -79,7 +80,7 @@ export class Reinhardt extends Hero {
   async useFireStrikeTo(
     io: Namespace,
     redisService: RedisService,
-    target: Hero
+    target: Hero | Skill
   ) {
     await this.skills.fireStrike.to(
       io,
@@ -106,21 +107,21 @@ export class Reinhardt extends Hero {
     await this.skills.charge.crash(
       io,
       redisService,
-      this,
+
       target,
       this.takeKill
     );
   }
 
   async useEarthshatter(io: Namespace, redisService: RedisService) {
-    await this.skills.earthshatter.use(io, redisService, this);
+    await this.skills.earthshatter.use(io, redisService);
   }
 
   async useEarthshatterTo(
     io: Namespace,
     redisService: RedisService,
-    target: Hero
+    target: Hero | Skill
   ) {
-    this.skills.earthshatter.to(io, redisService, this, this.takeKill);
+    this.skills.earthshatter.to(io, redisService, target, this.takeKill);
   }
 }

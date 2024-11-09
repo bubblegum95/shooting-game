@@ -6,12 +6,14 @@ import { updateMatchStatus } from '../../updateMatchStatus';
 import { logger, ModuleInitLog } from '../../../winston';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
+import { Team } from '../../../entities/team.entity';
 
 export class BarrierField extends Skill {
   constructor(
-    public name: 'barrierField',
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
+    public name: 'barrierField',
     public category: 'secondary',
     public type1: 'non-lethal',
     public type2: 'mounting',
@@ -21,7 +23,7 @@ export class BarrierField extends Skill {
     public cooltime: number,
     public isUsed: boolean
   ) {
-    super(name, whose, matchId, category, type1, type2, isActive);
+    super(name, teamId, whose, matchId, category, type1, type2, isActive);
     logger.info(ModuleInitLog, { filename: 'BarrierField' });
   }
 
@@ -62,7 +64,7 @@ Reinhardt.prototype.useBarrierField = async function (
   for (const skill of Object.values(this.skills))
     if (!(skill instanceof BarrierField)) {
       skill.isActive = false;
-      await updateMatchStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, skill);
     }
 };
 
@@ -75,6 +77,6 @@ Reinhardt.prototype.noUseBarrierField = async function (
   for (const skill of Object.values(this.skills))
     if (!(skill instanceof BarrierField)) {
       skill.isActive = true;
-      await updateMatchStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, skill);
     }
 };
