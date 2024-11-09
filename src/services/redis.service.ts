@@ -4,8 +4,8 @@ import { Player } from '../entities/player.entity';
 import { Team } from '../entities/team.entity';
 import { Match } from '../entities/match.entity';
 import { ModuleInitLog, logger } from '../winston';
-import { Hero } from './heroes/hero';
-import { Skill } from './skill/skill';
+import { Hero } from '../heroes/hero';
+import { Skill } from '../heroes/skill';
 import { PropertyType } from '../types/player-status.type';
 import { Redis } from 'ioredis';
 

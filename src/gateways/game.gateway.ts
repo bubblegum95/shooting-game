@@ -4,10 +4,7 @@ import { Match } from '../entities/match.entity';
 import { Player } from '../entities/player.entity';
 import { ModuleInitLog, logger } from '../winston';
 import { RedisService } from '../services/redis.service';
-import {
-  matchStatus,
-  resetMatchStatus,
-} from '../services/heroes/renewMatchStatus';
+import { matchStatus, updateMatchStatus } from '../heroes/updateMatchStatus';
 import { CreateMatchDto } from '../dto/create-match.dto';
 import { GameService } from '../services/game.service';
 import { MatchStatus } from '../types/match-status.type';
