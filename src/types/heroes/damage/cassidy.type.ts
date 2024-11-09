@@ -10,9 +10,10 @@ export const cassidy = function (
   playerId: string
 ) {
   const peacekeeper = new Peacekeeper(
-    'peacekeeper',
     playerId,
+    teamId,
     matchId,
+    'peacekeeper',
     'primary',
     'lethal',
     'mounting',
@@ -25,9 +26,10 @@ export const cassidy = function (
     3000
   );
   const rampage = new Rampage(
-    'rampage',
     playerId,
+    teamId,
     matchId,
+    'rampage',
     'secondary',
     'lethal',
     'mounting',
@@ -38,9 +40,10 @@ export const cassidy = function (
     30
   );
   const flashbang = new Flashbang(
-    'flashbang',
     playerId,
+    teamId,
     matchId,
+    'flashbang',
     'secondary',
     'lethal',
     'throwing',
@@ -51,9 +54,10 @@ export const cassidy = function (
     40
   );
   const deadeye = new Deadeye(
-    'deadeye',
     playerId,
+    teamId,
     matchId,
+    'deadeye',
     'ultimate',
     'lethal',
     'mounting',

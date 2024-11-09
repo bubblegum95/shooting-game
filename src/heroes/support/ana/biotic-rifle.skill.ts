@@ -1,18 +1,20 @@
 import { Namespace } from 'socket.io';
 import { Hero } from '../../hero';
 import { Ana } from './ana.hero';
-import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
+import { updateMatchStatus } from '../../updateMatchStatus';
 import { Skill } from '../../skill';
 import { logger, ModuleInitLog } from '../../../winston';
 import { RedisService } from '../../../services/redis.service';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
+import { Team } from '../../../entities/team.entity';
 
 export class BioticRifle extends Skill {
   constructor(
-    public name: string,
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
+    public name: string,
     public category: 'primary',
     public type1: 'mixed',
     public type2: 'mounting',
@@ -24,7 +26,7 @@ export class BioticRifle extends Skill {
     public maxBullets: number,
     public charging: number // 탄창 충전 시간
   ) {
-    super(name, whose, matchId, category, type1, type2, isActive);
+    super(name, whose, teamId, matchId, category, type1, type2, isActive);
     logger.info(ModuleInitLog, { filename: 'BioticRifle' });
   }
 
@@ -32,11 +34,11 @@ export class BioticRifle extends Skill {
     if (this.bullets > 0 && this.isActive) {
       this.bullets -= 1;
       this.isActive = false;
-      await updateSkillStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, this);
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateSkillStatus(io, redisService, this);
+        await updateMatchStatus(io, redisService, this);
       }, this.cooltime);
     } else if (this.bullets <= 0) {
       this.chargeBullets(io, redisService);
@@ -51,13 +53,13 @@ export class BioticRifle extends Skill {
   ) {
     target.takeHeal(io, redisService, this.power);
     player.ultimate += this.point;
-    await updatePlayerStatus(io, redisService, player);
+    await updateMatchStatus(io, redisService, player);
   }
 
   async attack(
     io: Namespace,
     redisService: RedisService,
-    target: Hero,
+    target: Hero | Skill,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {
     target.takeDamage(io, redisService, this.power, callback);
@@ -67,12 +69,12 @@ export class BioticRifle extends Skill {
     io: Namespace,
     redisService: RedisService,
     player: Ana,
-    target: Hero,
+    target: Hero | Skill,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {
-    if (player.team === target.team) {
+    if (player.team === target.team && target instanceof Hero) {
       this.heal(io, redisService, player, target);
-    } else {
+    } else if (player.team !== target.team) {
       this.attack(io, redisService, target, callback);
     }
   }

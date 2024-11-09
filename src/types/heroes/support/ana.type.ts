@@ -11,9 +11,10 @@ export const ana = function (
   playerId: string
 ) {
   const bioticGrenade = new BioticGrenade(
-    'bioticGrenade',
     playerId,
+    teamId,
     matchId,
+    'bioticGrenade',
     'secondary',
     'mixed',
     'throwing',
@@ -25,9 +26,10 @@ export const ana = function (
   );
 
   const scope = new Scope(
-    'scope',
     playerId,
+    teamId,
     matchId,
+    'scope',
     'secondary',
     'mixed',
     'mounting',
@@ -36,9 +38,10 @@ export const ana = function (
   );
 
   const sleepDart = new SleepDart(
-    'sleepDart',
     playerId,
+    teamId,
     matchId,
+    'sleepDart',
     'secondary',
     'lethal',
     'mounting',
@@ -50,9 +53,10 @@ export const ana = function (
   );
 
   const nanoBoost = new NanoBoost(
-    'nanoBoost',
     playerId,
+    teamId,
     matchId,
+    'nanoBoost',
     'ultimate',
     'non-lethal',
     'mounting',
@@ -62,9 +66,10 @@ export const ana = function (
   );
 
   const bioticRifle = new BioticRifle(
-    'bioticRifle',
     playerId,
+    teamId,
     matchId,
+    'bioticRifle',
     'primary',
     'mixed',
     'mounting',

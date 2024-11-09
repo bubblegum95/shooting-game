@@ -77,7 +77,11 @@ export class Cassidy extends Hero {
     }
   }
 
-  async useRampageTo(io: Namespace, redisService: RedisService, target: Hero) {
+  async useRampageTo(
+    io: Namespace,
+    redisService: RedisService,
+    target: Hero | Skill
+  ) {
     if (this.isAlive && !this.isShocked) {
       await this.skills.rampage.to(
         io,
@@ -96,7 +100,7 @@ export class Cassidy extends Hero {
   async useFlashbangTo(
     io: Namespace,
     redisService: RedisService,
-    target: Hero
+    target: Hero | Skill
   ) {
     await this.skills.flashbang.to(io, redisService, target, this.takeKill);
   }

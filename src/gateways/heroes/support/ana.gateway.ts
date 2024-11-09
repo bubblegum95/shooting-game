@@ -3,6 +3,7 @@ import { RedisService } from '../../../services/redis.service';
 import { ModuleInitLog, logger } from '../../../winston';
 import { Hero } from '../../../heroes/hero';
 import { Ana } from '../../../heroes/support/ana/ana.hero';
+import { Skill } from '../../../heroes/skill';
 
 export class AnaGateway {
   constructor(private io: Namespace, private redisService: RedisService) {
@@ -26,10 +27,6 @@ export class AnaGateway {
 
       socket.on('ana:scope:use', ({ ana }) => {
         this.useScope(ana);
-      });
-
-      socket.on('ana:scope:noUse', ({ ana }) => {
-        this.noUseScope(ana);
       });
 
       socket.on('ana:sleepDart:use', ({ ana }) => {
@@ -68,7 +65,7 @@ export class AnaGateway {
     await ana.shot(this.io, this.redisService);
   }
 
-  async useBioticRifleTo(ana: Ana, target: Hero) {
+  async useBioticRifleTo(ana: Ana, target: Hero | Skill) {
     await ana.heat(this.io, this.redisService, target);
   }
 
@@ -76,15 +73,11 @@ export class AnaGateway {
     await ana.useScope(this.io, this.redisService);
   }
 
-  async noUseScope(ana: Ana) {
-    await ana.noUseScope(this.io, this.redisService);
-  }
-
   async useSleepDart(ana: Ana) {
     await ana.usesSleepDart(this.io, this.redisService);
   }
 
-  async useSleepDartTo(ana: Ana, target: Hero) {
+  async useSleepDartTo(ana: Ana, target: Hero | Skill) {
     await ana.usesSleepDartTo(this.io, this.redisService, target);
   }
 
@@ -92,7 +85,7 @@ export class AnaGateway {
     await ana.usesBioticGrenade(this.io, this.redisService);
   }
 
-  async useBioticGrenadeTo(ana: Ana, target: Hero) {
+  async useBioticGrenadeTo(ana: Ana, target: Hero | Skill) {
     await ana.usesBioticGrenadeTo(this.io, this.redisService, target);
   }
 

@@ -9,6 +9,7 @@ import { Player } from '../../../entities/player.entity';
 import { Team } from '../../../entities/team.entity';
 import { BioticRifle } from './biotic-rifle.skill';
 import { Scope } from './scope.skill';
+import { Skill } from '../../skill';
 
 export class Ana extends Hero {
   constructor(
@@ -58,7 +59,7 @@ export class Ana extends Hero {
   }
 
   // 아군은 힐 적군은 딜
-  async heat(io: Namespace, redisService: RedisService, target: Hero) {
+  async heat(io: Namespace, redisService: RedisService, target: Hero | Skill) {
     await this.skills.bioticRifle.heat(
       io,
       redisService,
@@ -95,7 +96,7 @@ export class Ana extends Hero {
   async usesBioticGrenadeTo(
     io: Namespace,
     redisService: RedisService,
-    target: Hero
+    target: Hero | Skill
   ) {
     await this.skills.bioticGrenade.to(
       io,
@@ -115,7 +116,7 @@ export class Ana extends Hero {
   async usesSleepDartTo(
     io: Namespace,
     redisService: RedisService,
-    target: Hero
+    target: Hero | Skill
   ) {
     await this.skills.sleepDart.to(
       io,
@@ -133,7 +134,7 @@ export class Ana extends Hero {
   }
 
   async usesNanoBoost(io: Namespace, redisService: RedisService, target: Hero) {
-    if (this.isAlive && !this.isShocked) {
+    if (this.isAlive && target.teamId === this.teamId) {
       await this.skills.nanoBoost.useTo(io, redisService, target);
     }
   }

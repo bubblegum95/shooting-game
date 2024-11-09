@@ -2,17 +2,19 @@ import { Namespace } from 'socket.io';
 import { Skill } from '../../skill';
 import { RedisService } from '../../../services/redis.service';
 import { Reinhardt } from './reinhardt.hero';
-import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
+import { updateMatchStatus } from '../../updateMatchStatus';
 import { Hero } from '../../hero';
 import { logger, ModuleInitLog } from '../../../winston';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
+import { Team } from '../../../entities/team.entity';
 
 export class FireStrike extends Skill {
   constructor(
-    public name: 'fireStrike',
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
+    public name: 'fireStrike',
     public category: 'secondary',
     public type1: 'lethal',
     public type2: 'mounting',
@@ -21,18 +23,18 @@ export class FireStrike extends Skill {
     public power: number,
     public point: number
   ) {
-    super(name, whose, matchId, category, type1, type2, isActive);
+    super(name, teamId, whose, matchId, category, type1, type2, isActive);
     logger.info(ModuleInitLog, { filename: 'FireStrike' });
   }
 
   async use(io: Namespace, redisService: RedisService, player: Reinhardt) {
     if (this.isActive) {
       this.isActive = false;
-      await updateSkillStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, this);
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateSkillStatus(io, redisService, this);
+        await updateMatchStatus(io, redisService, this);
       }, this.cooltime);
     }
   }
@@ -41,11 +43,15 @@ export class FireStrike extends Skill {
     io: Namespace,
     redisService: RedisService,
     player: Reinhardt,
-    target: Hero,
+    target: Hero | Skill,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {
-    await target.takeDamage(io, redisService, this.power, callback);
-    player.ultimate += this.point;
-    await updatePlayerStatus(io, redisService, player);
+    if (target instanceof Hero && target.teamId !== this.teamId) {
+      await target.takeDamage(io, redisService, this.power, callback);
+      player.ultimate += this.point;
+      await updateMatchStatus(io, redisService, player);
+    } else if (target instanceof Skill && target.teamId !== this.teamId) {
+      await target.takeDamage(io, redisService, this.power);
+    }
   }
 }

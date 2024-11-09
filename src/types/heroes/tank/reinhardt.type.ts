@@ -11,9 +11,10 @@ export const reinhardt = function (
   playerId: string
 ) {
   const rocketHammer = new RocketHammer(
-    'rocketHammer',
     playerId,
+    teamId,
     matchId,
+    'rocketHammer',
     'primary',
     'lethal',
     'mounting',
@@ -25,9 +26,10 @@ export const reinhardt = function (
     800
   );
   const fireStrike = new FireStrike(
-    'fireStrike',
     playerId,
+    teamId,
     matchId,
+    'fireStrike',
     'secondary',
     'lethal',
     'mounting',
@@ -37,9 +39,10 @@ export const reinhardt = function (
     40
   );
   const charge = new Charge(
-    'charge',
     playerId,
+    teamId,
     matchId,
+    'charge',
     'secondary',
     'lethal',
     'mobility',
@@ -51,9 +54,10 @@ export const reinhardt = function (
     3
   );
   const barrierField = new BarrierField(
-    'barrierField',
     playerId,
+    teamId,
     matchId,
+    'barrierField',
     'secondary',
     'non-lethal',
     'mounting',
@@ -64,9 +68,10 @@ export const reinhardt = function (
     false
   );
   const earthshatter = new Earthshatter(
-    'earthshatter',
     playerId,
+    teamId,
     matchId,
+    'earthshatter',
     'ultimate',
     'lethal',
     'mounting',

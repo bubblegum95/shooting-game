@@ -1,15 +1,16 @@
 import { Namespace } from 'socket.io';
-import { updateSkillStatus } from './updateMatchStatus';
+import { updateMatchStatus } from './updateMatchStatus';
 import { RedisService } from '../services/redis.service';
-import { Hero } from './hero';
 import { Player } from '../entities/player.entity';
 import { Match } from '../entities/match.entity';
+import { Team } from '../entities/team.entity';
 
 export class Skill {
   [key: string]: any;
 
   constructor(
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
     public name: string,
     public category: 'primary' | 'secondary' | 'ultimate',
@@ -21,28 +22,28 @@ export class Skill {
   async chargeBullets(io: Namespace, redisService: RedisService) {
     if (this.category === 'primary' && this.bullets) {
       this.bullets = this.maxBullets;
-      await updateSkillStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, this);
     }
   }
 
   async isNotUsable(io: Namespace, redisService: RedisService) {
     if (this.isActive) {
       this.isActive = false;
-      await updateSkillStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, this);
     }
   }
 
   async isUsable(io: Namespace, redisService: RedisService) {
     if (!this.isActive) {
       this.isActive = true;
-      await updateSkillStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, this);
     }
   }
 
   async takeDamage(io: Namespace, redisService: RedisService, damage: number) {
     if (this.durability) {
       this.durability -= damage;
-      await updateSkillStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, this);
     }
   }
 
@@ -53,11 +54,11 @@ export class Skill {
     increase: number
   ) {
     this.power *= increase;
-    await updateSkillStatus(io, redisService, this);
+    await updateMatchStatus(io, redisService, this);
 
     setTimeout(async () => {
       this.power /= increase;
-      await updateSkillStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, this);
     }, duration);
   }
 }

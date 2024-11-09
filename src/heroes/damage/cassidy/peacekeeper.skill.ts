@@ -5,12 +5,14 @@ import { ModuleInitLog, logger } from '../../../winston';
 import { Skill } from '../../skill';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
-import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
+import { updateMatchStatus } from '../../updateMatchStatus';
+import { Team } from '../../../entities/team.entity';
 
 export class Peacekeeper extends Skill {
   constructor(
     public name: string,
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
     public category: 'primary',
     public type1: 'lethal',
@@ -23,7 +25,7 @@ export class Peacekeeper extends Skill {
     public point: number,
     public chargingTime: number
   ) {
-    super(name, whose, matchId, category, type1, type2, isActive);
+    super(name, whose, teamId, matchId, category, type1, type2, isActive);
     logger.info(ModuleInitLog, { filename: 'Peacekeeper' });
   }
 
@@ -31,7 +33,7 @@ export class Peacekeeper extends Skill {
     if (this.isActive && this.bullets > 0) {
       this.bullets -= 1;
       this.isActive = false;
-      await updateSkillStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, this);
 
       if (this.bullets <= 0) {
         this.chargeBullets(io, redisService);
@@ -39,7 +41,7 @@ export class Peacekeeper extends Skill {
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateSkillStatus(io, redisService, this);
+        await updateMatchStatus(io, redisService, this);
       }, this.cooltime);
     } else if (this.bullets <= 0) {
       this.chargeBullets(io, redisService);
@@ -55,9 +57,9 @@ export class Peacekeeper extends Skill {
   ) {
     if (target instanceof Hero) {
       target.takeDamage(io, redisService, this.power, callback);
-      await updatePlayerStatus(io, redisService, target);
+      await updateMatchStatus(io, redisService, target);
       player.ultimate += this.point;
-      await updatePlayerStatus(io, redisService, player);
+      await updateMatchStatus(io, redisService, player);
     } else if (target instanceof Skill) {
       target.takeDamage(io, redisService, this.power);
     }

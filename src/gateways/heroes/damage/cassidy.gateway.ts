@@ -74,7 +74,7 @@ export class CassidyGateway {
     await cassidy.useRampage(this.io, this.redisService);
   }
 
-  async useRampageTo(cassidy: Cassidy, target: Hero) {
+  async useRampageTo(cassidy: Cassidy, target: Hero | Skill) {
     await cassidy.useRampageTo(this.io, this.redisService, target);
   }
 
@@ -82,7 +82,7 @@ export class CassidyGateway {
     await cassidy.useRampage(this.io, this.redisService);
   }
 
-  async useFlashbangTo(cassidy: Cassidy, target: Hero) {
+  async useFlashbangTo(cassidy: Cassidy, target: Hero | Skill) {
     await cassidy.useFlashbangTo(this.io, this.redisService, target);
   }
 

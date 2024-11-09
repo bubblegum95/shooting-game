@@ -2,16 +2,18 @@ import { Namespace } from 'socket.io';
 import { ModuleInitLog, logger } from '../../../winston';
 import { RedisService } from '../../../services/redis.service';
 import { Hero } from '../../hero';
-import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
+import { updateMatchStatus } from '../../updateMatchStatus';
 import { Skill } from '../../skill';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
+import { Team } from '../../../entities/team.entity';
 
 export class Flashbang extends Skill {
   constructor(
-    public name: string,
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
+    public name: string,
     public category: 'secondary',
     public type1: 'lethal',
     public type2: 'throwing',
@@ -21,18 +23,18 @@ export class Flashbang extends Skill {
     public power: number,
     public point: number
   ) {
-    super(name, whose, matchId, category, type1, type2, isActive);
+    super(name, whose, teamId, matchId, category, type1, type2, isActive);
     logger.info(ModuleInitLog, { filename: 'Flashbang' });
   }
 
   async use(io: Namespace, redisService: RedisService) {
     if (this.isActive) {
       this.isActive = false;
-      await updateSkillStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, this);
 
       setTimeout(async () => {
         this.isActive = true;
-        await updateSkillStatus(io, redisService, this);
+        await updateMatchStatus(io, redisService, this);
       }, this.cooltime);
     }
   }
@@ -40,12 +42,12 @@ export class Flashbang extends Skill {
   async to(
     io: Namespace,
     redisService: RedisService,
-    target: Hero,
+    target: Hero | Skill,
     callback: (io: Namespace, redisService: RedisService) => void
   ) {
     target.takeDamage(io, redisService, this.power, callback);
     target.shocked(io, redisService, this.duration);
-    await updateSkillStatus(io, redisService, this);
+    await updateMatchStatus(io, redisService, this);
   }
 }
 // this.isShocked 상태일 때 캐릭터 스킬 비활성화 하는 로직
@@ -60,11 +62,11 @@ Hero.prototype.exceptPrimary = function (
   Object.values(this.skills).forEach(async (skill) => {
     if (skill.category !== 'primary') {
       skill.isNotUseable(io, redisService);
-      await updateSkillStatus(io, redisService, skill);
+      await updateMatchStatus(io, redisService, skill);
 
       setTimeout(async () => {
         skill.isNotUseable(io, redisService);
-        await updateSkillStatus(io, redisService, skill);
+        await updateMatchStatus(io, redisService, skill);
       }),
         duration;
     }
@@ -85,12 +87,12 @@ Hero.prototype.shocked = async function (
   if (this.isAlive) {
     this.isShocked = true;
     this.isNotAbleToUseSkillsDuring(duration);
-    await updatePlayerStatus(io, redisService, this);
+    await updateMatchStatus(io, redisService, this);
 
     setTimeout(async () => {
       this.isShocked = false;
       delete this.isShocked;
-      await updatePlayerStatus(io, redisService, this);
+      await updateMatchStatus(io, redisService, this);
     }, duration);
   }
 };

@@ -5,13 +5,15 @@ import { ModuleInitLog, logger } from '../../../winston';
 import { Skill } from '../../skill';
 import { Player } from '../../../entities/player.entity';
 import { Match } from '../../../entities/match.entity';
-import { updatePlayerStatus, updateSkillStatus } from '../../updateMatchStatus';
+import { updateMatchStatus } from '../../updateMatchStatus';
+import { Team } from '../../../entities/team.entity';
 
 export class Deadeye extends Skill {
   constructor(
-    public name: string,
     public whose: Player['id'],
+    public teamId: Team['id'],
     public matchId: Match['id'],
+    public name: string,
     public category: 'ultimate',
     public type1: 'lethal',
     public type2: 'mounting',
@@ -20,7 +22,7 @@ export class Deadeye extends Skill {
     public duration: number,
     public power: number
   ) {
-    super(name, whose, matchId, category, type1, type2, isActive);
+    super(name, teamId, whose, matchId, category, type1, type2, isActive);
     logger.info(ModuleInitLog, { filename: 'Deadeye' });
   }
 
@@ -31,12 +33,12 @@ export class Deadeye extends Skill {
   async use(io: Namespace, redisService: RedisService) {
     this.isActive = false;
     this.casting = true;
-    await updateSkillStatus(io, redisService, this);
+    await updateMatchStatus(io, redisService, this);
 
     setTimeout(() => {
       this.casting = false;
     }, this.duration);
-    await updateSkillStatus(io, redisService, this);
+    await updateMatchStatus(io, redisService, this);
   }
 
   async to(
@@ -48,8 +50,8 @@ export class Deadeye extends Skill {
     if (this.casting && targets) {
       for (const target of targets) {
         target.takeDamage(io, redisService, this.power, callback);
-        await updatePlayerStatus(io, redisService, target);
-        await updateSkillStatus(io, redisService, this);
+        await updateMatchStatus(io, redisService, target);
+        await updateMatchStatus(io, redisService, this);
       }
     }
   }
