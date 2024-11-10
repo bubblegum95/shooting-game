@@ -45,7 +45,7 @@ export class Deadeye extends Skill {
     io: Namespace,
     redisService: RedisService,
     targets: Hero[],
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     if (this.casting && targets) {
       for (const target of targets) {

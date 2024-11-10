@@ -25,21 +25,33 @@ export class NanoBoost extends Skill {
     logger.info(ModuleInitLog, { filename: 'NanoBoost' });
   }
 
-  async useTo(io: Namespace, redisService: RedisService, target: Hero) {
+  async useTo(
+    io: Namespace,
+    redisService: RedisService,
+    target: Hero,
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
+  ) {
     if (this.isActive && target) {
       this.isActive = false;
       await updateMatchStatus(io, redisService, this);
-      target.boostUp(io, redisService, this.duration);
+      target.isReinforced(io, redisService, this.duration, callback);
     }
   }
 }
 
-Hero.prototype.boostUp = function (
+Hero.prototype.isReinforced = function (
   io: Namespace,
   redisService: RedisService,
-  duration: number
+  duration: number,
+  callback: (io: Namespace, redisService: RedisService) => Promise<void>
 ) {
-  this.isReinforced = true;
+  this.boostUp = true;
+  this.takeKill = async function () {
+    if (this.boostUp) {
+      await callback(io, redisService);
+    }
+  };
+
   for (const skill of Object.values(this.skills)) {
     if (skill.type === 'lethal' || skill.type === 'mixed') {
       skill.powerUp(io, redisService, this.increase, this.duration);
@@ -47,7 +59,7 @@ Hero.prototype.boostUp = function (
   }
 
   setTimeout(() => {
-    this.isReinforced = false;
-    delete this.isReinforced;
+    this.boostUp = false;
+    delete this.boostUp;
   }, duration);
 };

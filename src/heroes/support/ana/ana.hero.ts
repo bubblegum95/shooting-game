@@ -135,7 +135,12 @@ export class Ana extends Hero {
 
   async usesNanoBoost(io: Namespace, redisService: RedisService, target: Hero) {
     if (this.isAlive && target.teamId === this.teamId) {
-      await this.skills.nanoBoost.useTo(io, redisService, target);
+      await this.skills.nanoBoost.useTo(
+        io,
+        redisService,
+        target,
+        this.takeKill
+      );
     }
   }
 }

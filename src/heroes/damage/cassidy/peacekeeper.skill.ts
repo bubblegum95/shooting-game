@@ -53,7 +53,7 @@ export class Peacekeeper extends Skill {
     redisService: RedisService,
     player: Hero,
     target: Hero | Skill,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     if (target instanceof Hero) {
       target.takeDamage(io, redisService, this.power, callback);
