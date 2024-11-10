@@ -60,7 +60,7 @@ export class BioticRifle extends Skill {
     io: Namespace,
     redisService: RedisService,
     target: Hero | Skill,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     target.takeDamage(io, redisService, this.power, callback);
   }
@@ -70,7 +70,7 @@ export class BioticRifle extends Skill {
     redisService: RedisService,
     player: Ana,
     target: Hero | Skill,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     if (player.team === target.team && target instanceof Hero) {
       this.heal(io, redisService, player, target);

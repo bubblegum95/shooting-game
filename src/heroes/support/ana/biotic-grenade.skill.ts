@@ -46,7 +46,7 @@ export class BioticGrenade extends Skill {
     redisService: RedisService,
     player: Ana,
     target: Hero | Skill,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     if (player.team === target.team && target instanceof Hero) {
       target.takeHeal(io, redisService, this.power);

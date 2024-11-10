@@ -54,7 +54,7 @@ export class Hero {
     io: Namespace,
     redisService: RedisService,
     power: number,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     if (this.isAlive) {
       this.health -= power;
@@ -64,7 +64,7 @@ export class Hero {
         this.health = 0;
         await this.die(io, redisService);
         await updateMatchStatus(io, redisService, this);
-        callback(io, redisService);
+        await callback(io, redisService);
       }
     }
   }

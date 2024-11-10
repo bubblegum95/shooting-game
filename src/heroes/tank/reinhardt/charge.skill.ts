@@ -71,7 +71,7 @@ export class Charge extends Skill {
     io: Namespace,
     redisService: RedisService,
     target: Hero,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     await target.takeDamage(io, redisService, this.power, callback);
   }

@@ -43,7 +43,7 @@ export class Flashbang extends Skill {
     io: Namespace,
     redisService: RedisService,
     target: Hero | Skill,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     target.takeDamage(io, redisService, this.power, callback);
     target.shocked(io, redisService, this.duration);

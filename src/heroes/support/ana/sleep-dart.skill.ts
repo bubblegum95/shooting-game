@@ -45,7 +45,7 @@ export class SleepDart extends Skill {
     redisService: RedisService,
     player: Ana,
     target: Hero | Skill,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     if (player.teamId !== target.teamId && target instanceof Hero) {
       await target.sleep(io, redisService, player, this.duration);

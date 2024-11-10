@@ -24,3 +24,5 @@
 - Redis
 - PostgreSQL(TypeORM)
 - Docker Compose
+- Ubuntu
+- AWS RDS

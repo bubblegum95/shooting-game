@@ -46,7 +46,7 @@ export class RocketHammer extends Skill {
     redisService: RedisService,
     player: Reinhardt,
     target: Hero | Skill,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     if (target instanceof Hero && target.teamId !== this.teamId) {
       await target.takeDamage(io, redisService, this.power, callback);

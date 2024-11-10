@@ -37,7 +37,7 @@ export class Earthshatter extends Skill {
     io: Namespace,
     redisService: RedisService,
     target: Hero | Skill,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     if (target.teamId !== this.teamId && target instanceof Hero) {
       await target.takeDamage(io, redisService, this.power, callback);

@@ -53,7 +53,7 @@ export class Rampage extends Skill {
     redisService: RedisService,
     player: Cassidy,
     target: Hero | Skill,
-    callback: (io: Namespace, redisService: RedisService) => void
+    callback: (io: Namespace, redisService: RedisService) => Promise<void>
   ) {
     if (target instanceof Hero) {
     }
