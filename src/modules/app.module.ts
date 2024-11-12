@@ -14,7 +14,7 @@ import http from 'http';
 import express from 'express';
 import { UserRoute } from '../routes/user.route';
 import { GameService } from '../services/game.service';
-import { redisClient } from '../redis/redis.client';
+import { redisCluster } from '../redis/redis.client';
 
 export class AppModule {
   dataSource: any;
@@ -38,7 +38,7 @@ export class AppModule {
     const teamService = new TeamService(teamRepository);
     const playerService = new PlayerService(playerRepository);
     const userService = new UserService(userRepository);
-    const redisService = new RedisService(redisClient); // 싱글톤 적용
+    const redisService = new RedisService(redisCluster);
 
     const gameService = new GameService(
       matchService,
