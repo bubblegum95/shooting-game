@@ -7,10 +7,10 @@ import { ModuleInitLog, logger } from '../winston';
 import { Hero } from '../heroes/hero';
 import { Skill } from '../heroes/skill';
 import { PropertyType } from '../types/player-status.type';
-import { Redis } from 'ioredis';
+import { Cluster } from 'ioredis';
 
 export class RedisService {
-  constructor(private redis: Redis) {
+  constructor(private redis: Cluster) {
     logger.info(ModuleInitLog, { filename: 'RedisService' });
   }
 

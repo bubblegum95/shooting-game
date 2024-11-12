@@ -1,7 +1,87 @@
 services:
-  asyncapi-generator:
-    image: asyncapi/generator
+  redis-node-0:
+    image: bitnami/redis-cluster:latest
+    ports:
+      - 6371:6379
     volumes:
-      - ./asyncapi.yml:/app/asyncapi.yml # AsyncAPI 스펙 파일을 마운트
-      - ./output:/app/output # 생성된 파일을 저장할 로컬 경로
-    command: -o /app/output /app/asyncapi.yml html
+      - ${REDIS_PATH}/redis-cluster-0:/data
+    environment:
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+      - 'REDIS_NODES=${REDIS_NODES}'
+
+  redis-node-1:
+    image: bitnami/redis-cluster:latest
+    ports:
+      - 6372:6379
+    volumes:
+      - ${REDIS_PATH}/redis-cluster-1:/data
+    environment:
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+      - 'REDIS_NODES=${REDIS_NODES}'
+
+  redis-node-2:
+    image: bitnami/redis-cluster:latest
+    ports:
+      - 6373:6379
+    volumes:
+      - ${REDIS_PATH}/redis-cluster-2:/data
+    environment:
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+      - 'REDIS_NODES=${REDIS_NODES}'
+
+  redis-node-3:
+    image: bitnami/redis-cluster:latest
+    ports:
+      - 6374:6379
+    volumes:
+      - ${REDIS_PATH}/redis-cluster-3:/data
+    environment:
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+      - 'REDIS_NODES=${REDIS_NODES}'
+
+  redis-node-4:
+    image: bitnami/redis-cluster:latest
+    ports:
+      - 6375:6379
+    volumes:
+      - ${REDIS_PATH}/redis-cluster-4:/data
+    environment:
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+      - 'REDIS_NODES=${REDIS_NODES}'
+
+  redis-node-5:
+    image: bitnami/redis-cluster:latest
+    ports:
+      - 6376:6379
+    volumes:
+      - ${REDIS_PATH}/redis-cluster-5:/data
+    depends_on:
+      - redis-node-0
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-node-4
+    environment:
+      - 'REDIS_PASSWORD=${REDIS_PASSWORD}'
+      - 'REDISCLI_AUTH=${REDISCLI_AUTH}'
+      - 'REDIS_CLUSTER_REPLICAS=1'
+      - 'REDIS_NODES=${REDIS_NODES}'
+      - 'REDIS_CLUSTER_CREATOR=yes'
+
+# volumes:
+#   redis-cluster-0:
+#     driver: local
+#   redis-cluster-1:
+#     driver: local
+#   redis-cluster-2:
+#     driver: local
+#   redis-cluster-3:
+#     driver: local
+#   redis-cluster-4:
+#     driver: local
+#   redis-cluster-5:
+#     driver: local
+
+networks:
+  default:
+    name: redis-cluster-network

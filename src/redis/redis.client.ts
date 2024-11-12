@@ -1,10 +1,28 @@
-import Redis from 'ioredis';
-import dotenv from 'dotenv';
+import dotenv from 'dotenv/config';
+import { Cluster, ClusterOptions } from 'ioredis';
 
-dotenv.config();
+// Redis 클러스터 노드 설정
+export const redisCluster = new Cluster(
+  [
+    { host: '127.0.0.1', port: 6371 },
+    { host: '127.0.0.1', port: 6372 },
+    { host: '127.0.0.1', port: 6373 },
+    { host: '127.0.0.1', port: 6374 },
+    { host: '127.0.0.1', port: 6375 },
+    { host: '127.0.0.1', port: 6376 },
+  ],
+  {
+    redisOptions: {
+      password: process.env.REDIS_PASSWORD,
+    },
+  }
+);
 
-export const redisClient = new Redis({
-  host: process.env.REDIS_HOST || '127.0.0.1', // Redis 서버 호스트
-  port: parseInt(process.env.REDIS_PORT || '6379'), // Redis 서버 포트
-  password: process.env.REDIS_PASSWORD || undefined, // Redis 비밀번호 (있는 경우)
+redisCluster.on('connect', () => {
+  console.log('Redis 클러스터에 연결되었습니다.');
+});
+
+// 에러 핸들링
+redisCluster.on('error', (err) => {
+  console.error('Redis 클러스터 연결 오류:', err);
 });
