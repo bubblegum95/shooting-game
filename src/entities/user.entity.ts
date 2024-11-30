@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'user' })
 export class User {
@@ -19,4 +25,7 @@ export class User {
 
   @Column({ type: 'varchar', nullable: false, length: 11, unique: true })
   phone: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
 }
