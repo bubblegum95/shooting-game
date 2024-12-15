@@ -10,7 +10,7 @@ import { AppModule } from './modules/app.module';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.SERVER_PORT;
 
 app.set('port', port);
 app.use(logger('dev'));

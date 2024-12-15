@@ -1,0 +1,14 @@
+node_modules
+package-lock.json
+output
+data
+dist
+logs
+.gitignore
+README.md
+.github
+.env
+git-commit.txt
+.DS_Store
+Dockerfile
+docker-compose.yaml
