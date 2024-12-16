@@ -32,8 +32,14 @@ services:
       - 3000 # Nginx에서 접근 가능하도록 노출
     ports:
       - '${SERVER_PORT}:${SERVER_PORT}'
+    command: >
+      sh -c "
+      apt-get update &&
+      apt-get install -y postgresql-client &&
+      npm run start"
     depends_on:
       - redis-node-5
+      - postgres
 
   nginx:
     image: nginx:latest
@@ -47,180 +53,105 @@ services:
     depends_on:
       - app
 
+  postgres:
+    image: bitnami/postgresql:latest
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_DATABASE=game
+    networks:
+      - node_game
+
   redis-node-0:
+    image: docker.io/bitnami/redis-cluster:7.2
     container_name: redis-node-0
-    image: bitnami/redis-cluster:latest
     ports:
       - 6371:6379
     volumes:
-      - ./data:/bitnami/redis/data
-    user: '1001'
-    command: >
-      bash -c "
-      mkdir -p /bitnami/redis/data &&
-      chown -R 1001:1001 /bitnami/redis/data &&
-      chmod -R 775 /bitnami/redis/data &&
-      redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes"
+      - redis-cluster_data-0:/bitnami/redis/data
     environment:
-      - REDIS_NODES=${REDIS_NODES}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    networks:
-      - node_game
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - 'REDIS_PASSWORD=bitnami'
+      - 'REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5'
 
   redis-node-1:
+    image: docker.io/bitnami/redis-cluster:7.2
     container_name: redis-node-1
-    image: bitnami/redis-cluster:latest
     ports:
       - 6372:6379
     volumes:
-      - ./data:/bitnami/redis/data
-    user: '1001'
-    command: >
-      bash -c "
-      mkdir -p /bitnami/redis/data &&
-      chown -R 1001:1001 /bitnami/redis/data &&
-      chmod -R 775 /bitnami/redis/data &&
-      redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes"
+      - redis-cluster_data-1:/bitnami/redis/data
     environment:
-      - REDIS_NODES=${REDIS_NODES}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    networks:
-      - node_game
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    depends_on:
-      - redis-node-0
+      - 'REDIS_PASSWORD=bitnami'
+      - 'REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5'
 
   redis-node-2:
+    image: docker.io/bitnami/redis-cluster:7.2
     container_name: redis-node-2
-    image: bitnami/redis-cluster:latest
     ports:
       - 6373:6379
     volumes:
-      - ./data:/bitnami/redis/data
-    user: '1001'
-    command: >
-      bash -c "
-      mkdir -p /bitnami/redis/data &&
-      chown -R 1001:1001 /bitnami/redis/data &&
-      chmod -R 775 /bitnami/redis/data &&
-      redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes"
+      - redis-cluster_data-2:/bitnami/redis/data
     environment:
-      - REDIS_NODES=${REDIS_NODES}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    networks:
-      - node_game
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    depends_on:
-      - redis-node-1
+      - 'REDIS_PASSWORD=bitnami'
+      - 'REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5'
 
   redis-node-3:
+    image: docker.io/bitnami/redis-cluster:7.2
     container_name: redis-node-3
-    image: bitnami/redis-cluster:latest
     ports:
       - 6374:6379
     volumes:
-      - ./data:/bitnami/redis/data
-    user: '1001'
-    command: >
-      bash -c "
-      mkdir -p /bitnami/redis/data &&
-      chown -R 1001:1001 /bitnami/redis/data &&
-      chmod -R 775 /bitnami/redis/data &&
-      redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes"
+      - redis-cluster_data-3:/bitnami/redis/data
     environment:
-      - REDIS_NODES=${REDIS_NODES}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    networks:
-      - node_game
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    depends_on:
-      - redis-node-2
+      - 'REDIS_PASSWORD=bitnami'
+      - 'REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5'
 
   redis-node-4:
+    image: docker.io/bitnami/redis-cluster:7.2
     container_name: redis-node-4
-    image: bitnami/redis-cluster:latest
     ports:
       - 6375:6379
     volumes:
-      - ./data:/bitnami/redis/data
-    user: '1001'
-    command: >
-      bash -c "
-      mkdir -p /bitnami/redis/data &&
-      chown -R 1001:1001 /bitnami/redis/data &&
-      chmod -R 775 /bitnami/redis/data &&
-      redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes"
+      - redis-cluster_data-4:/bitnami/redis/data
     environment:
-      - REDIS_NODES=${REDIS_NODES}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    networks:
-      - node_game
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    depends_on:
-      - redis-node-3
+      - 'REDIS_PASSWORD=bitnami'
+      - 'REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5'
 
   redis-node-5:
+    image: docker.io/bitnami/redis-cluster:7.2
     container_name: redis-node-5
-    image: bitnami/redis-cluster:latest
     ports:
-      - 6376:6379
+      - 6379:6379
     volumes:
-      - ./data:/bitnami/redis/data
-    user: '1001'
-    command: >
-      bash -c "
-      mkdir -p /bitnami/redis/data &&
-      chown -R 1001:1001 /bitnami/redis/data &&
-      chmod -R 775 /bitnami/redis/data &&
-      redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes"
-    environment:
-      - REDIS_NODES=${REDIS_NODES}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - REDIS_CLUSTER_REPLICAS=1
-      - REDIS_CLUSTER_CREATOR=yes
-    networks:
-      - node_game
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - redis-cluster_data-5:/bitnami/redis/data
     depends_on:
+      - redis-node-0
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
       - redis-node-4
+    environment:
+      - 'REDIS_PASSWORD=bitnami'
+      - 'REDISCLI_AUTH=bitnami'
+      - 'REDIS_CLUSTER_REPLICAS=1'
+      - 'REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5'
+      - 'REDIS_CLUSTER_CREATOR=yes'
 
 volumes:
-  redis-cluster-0:
+  redis-cluster_data-0:
     driver: local
-  redis-cluster-1:
+  redis-cluster_data-1:
     driver: local
-  redis-cluster-2:
+  redis-cluster_data-2:
     driver: local
-  redis-cluster-3:
+  redis-cluster_data-3:
     driver: local
-  redis-cluster-4:
+  redis-cluster_data-4:
     driver: local
-  redis-cluster-5:
+  redis-cluster_data-5:
     driver: local
 
 networks:
