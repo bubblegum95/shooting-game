@@ -2,12 +2,12 @@ FROM node:18
 
 WORKDIR /app
 
-COPY package.json ./package.json
-
-COPY tsconfig.json ./tsconfig.json
+COPY . .
 
 RUN npm install
 
 EXPOSE 4000
 
-CMD ["npm", "start:dev"]
+RUN npm run build
+
+CMD ["npm", "run", "start"]

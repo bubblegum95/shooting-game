@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auth(회원가입/로그인)</title>
+  </head>
+  <body>
+    <form name="sign-up-form">
+      <fieldset>
+        <legend>회원가입</legend>
+        name:
+        <input id="name" type="text" required placeholder="이름" /><br /><br />
+        username:
+        <input
+          id="username"
+          type="text"
+          required
+          placeholder="닉네임"
+        /><br /><br />
+        email:
+        <input
+          id="email"
+          type="email"
+          required
+          placeholder="이메일"
+        /><br /><br />
+        phone:
+        <input
+          id="phone"
+          type="text"
+          required
+          placeholder="휴대전화"
+        /><br /><br />
+        password:
+        <input
+          id="password"
+          type="password"
+          required
+          placeholder="비밀번호"
+        /><br /><br />
+        <button onclick="submitSignUpForm()"></button>
+      </fieldset>
+    </form>
+    <script type="module" src="index.js"></script>
+  </body>
+</html>

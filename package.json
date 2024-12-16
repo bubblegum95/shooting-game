@@ -20,7 +20,7 @@
     "class-validate": "^0.0.1",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.4.7",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
     "ioredis": "^5.4.1",
